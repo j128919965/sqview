@@ -1,40 +1,43 @@
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import icon from '../../assets/icon.svg';
+import { MemoryRouter as Router, Route, Routes } from 'react-router-dom';
 import './App.css';
+import { useEffect, useState } from 'react';
+import { List, ListItem, ListItemButton, ListItemContent, ListItemDecorator } from '@mui/joy';
+import { Home, KeyboardArrowRight } from '@mui/icons-material';
+import { getSubDirs } from './utils/fileUtils';
+import '@fontsource/inter';
+import Fake from './fake/Fake';
 
 function Hello() {
+  const [subDirs, setSubDirs] = useState<string[]>([]);
+
+  useEffect(() => {
+
+
+    window.electron.ipcRenderer.on('open_root_dir', (args: string[]) => {
+      getSubDirs(args[0])
+        .then((res: string[]) => setSubDirs(res))
+        .catch((err: Error) => setSubDirs([err.message]));
+    });
+
+  }, []);
+
   return (
     <div>
-      <div className="Hello">
-        <img width="200" alt="icon" src={icon} />
-      </div>
-      <h1>electron-react-boilerplate</h1>
-      <div className="Hello">
-        <a
-          href="https://electron-react-boilerplate.js.org/"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <button type="button">
-            <span role="img" aria-label="books">
-              📚
-            </span>
-            Read our docs
-          </button>
-        </a>
-        <a
-          href="https://github.com/sponsors/electron-react-boilerplate"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <button type="button">
-            <span role="img" aria-label="folded hands">
-              🙏
-            </span>
-            Donate
-          </button>
-        </a>
-      </div>
+      {
+        subDirs.length === 0 ? <Fake /> : <List>
+          {
+            subDirs.map(subDir => <ListItem variant='soft' key={subDir}>
+              <ListItemButton onClick={() => alert('click')}>
+                <ListItemDecorator> <Home /> </ListItemDecorator>
+                <ListItemContent>{subDir}</ListItemContent>
+                <KeyboardArrowRight />
+              </ListItemButton>
+            </ListItem>)
+          }
+        </List>
+      }
+
+
     </div>
   );
 }
@@ -43,7 +46,7 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Hello />} />
+        <Route path='/' element={<Hello />} />
       </Routes>
     </Router>
   );
