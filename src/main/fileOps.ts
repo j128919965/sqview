@@ -4,6 +4,27 @@ import * as path from 'path';
 //
 // const fs = require('node:fs')
 // const path = require('node:path')
+const ZstdCodec = require('zstd-codec').ZstdCodec;
+
+ const compress = (data: Buffer): Promise<Buffer> => {
+  return new Promise<Buffer>((resolve, reject) => {
+    ZstdCodec.run((zstd: any) => {
+      const streaming = new zstd.Streaming();
+      resolve(streaming.compress(data, 9));
+    });
+  });
+
+};
+ const decompress = (data: Buffer): Promise<Buffer> => {
+  return new Promise<Buffer>((resolve, reject) => {
+    ZstdCodec.run((zstd: any) => {
+      const streaming = new zstd.Streaming();
+      resolve(streaming.decompress(data, undefined));
+    });
+  });
+
+};
+
 
 // 封装遍历目录的函数
 export function getSubDirs(directory: string): Promise<string[]> {
@@ -85,5 +106,13 @@ export function registerMainProcessListeners() {
       console.error('Failed to write file bytes:', error);
       throw error;
     }
+  });
+
+  ipcMain.handle('compress', (e, buf) => {
+    return compress(buf);
+  });
+
+  ipcMain.handle('decompress', (e, buf) => {
+    return decompress(buf);
   });
 }
