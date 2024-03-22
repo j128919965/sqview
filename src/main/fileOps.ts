@@ -6,16 +6,19 @@ import * as path from 'path';
 // const path = require('node:path')
 const ZstdCodec = require('zstd-codec').ZstdCodec;
 
- const compress = (data: Buffer): Promise<Buffer> => {
+const compress = (data: Buffer | string): Promise<Buffer> => {
   return new Promise<Buffer>((resolve, reject) => {
     ZstdCodec.run((zstd: any) => {
       const streaming = new zstd.Streaming();
+      if (typeof data === 'string') {
+        data = Buffer.from(data)
+      }
       resolve(streaming.compress(data, 9));
     });
   });
 
 };
- const decompress = (data: Buffer): Promise<Buffer> => {
+const decompress = (data: Buffer): Promise<Buffer> => {
   return new Promise<Buffer>((resolve, reject) => {
     ZstdCodec.run((zstd: any) => {
       const streaming = new zstd.Streaming();
@@ -59,7 +62,6 @@ export function readFileBytes(filePath: string): Promise<Buffer> {
         reject(err);
         return;
       }
-
       resolve(data);
     });
   });
@@ -115,4 +117,10 @@ export function registerMainProcessListeners() {
   ipcMain.handle('decompress', (e, buf) => {
     return decompress(buf);
   });
+
+  ipcMain.handle('mkdirs', (e, path) => {
+    return new Promise((res, rej) => {
+      fs.mkdir(path, { recursive: true }, () => res(true))
+    })
+  })
 }

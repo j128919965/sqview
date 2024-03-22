@@ -102,13 +102,16 @@
     "@mui/icons-material": "^5.15.14",
     "@mui/joy": "^5.0.0-beta.32",
     "@mui/material": "^5.15.14",
+    "axios": "^1.6.8",
     "electron-debug": "^3.2.0",
     "electron-log": "^4.4.8",
     "electron-updater": "^6.1.4",
+    "lru-cache": "^10.2.0",
     "path-browserify": "^1.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.16.0",
+    "tunnel": "^0.0.6",
     "zstd-codec": "^0.1.4"
   },
   "devDependencies": {

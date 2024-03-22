@@ -1,25 +1,21 @@
 import { useState } from 'react';
-import { Button, Card } from '@mui/joy';
-import { readFileBytesRenderer, writeFileBytesRenderer } from '../utils/fileUtils';
+import { Button, Card, Input } from '@mui/joy';
+import { readFileBytes, writeFileBytesRenderer } from '../utils/fileUtils';
 import { compress, decompress } from '../utils/zstdUtils';
 import { parseDataUrl } from '../utils/imgUtils';
+import { SqPicUrlHelper } from '../utils/picDownloader';
 
 export default () => {
   const [counter, setCounter] = useState<number>(0);
 
+  const [url, setUrl] = useState<string>();
+
   const [dataUrl, setDataUrl] = useState<string>();
 
   const saveCompress = async () => {
-    const path = 'C:\\Users\\85368\\Pictures\\Camera Roll\\safepoint.png';
-
-    const buf = await readFileBytesRenderer(path);
-    const compressed = await compress(buf);
-    const compressPath = path + '.compressed';
-    await writeFileBytesRenderer(compressPath, compressed);
-
-    const buf2 = await readFileBytesRenderer(compressPath);
-    const buf3 = await decompress(buf2)
-    setDataUrl(parseDataUrl(buf3));
+    if (!url) return
+    const urls = SqPicUrlHelper.urls(url)
+    console.log(urls)
 
   };
 
@@ -38,9 +34,13 @@ export default () => {
       >
         count++
       </Button>
+      <Input value={url} onChange={(e) => {
+        setUrl(e.target.value)
+      }} />
       <Button onClick={saveCompress}>
         compress
       </Button>
+
       {dataUrl && <img src={dataUrl} alt='啊这' />}
 
 

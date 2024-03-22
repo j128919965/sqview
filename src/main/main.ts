@@ -15,6 +15,7 @@ import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import { registerMainProcessListeners } from './fileOps';
+import { registerSqPicModule } from './sqPicOps';
 
 class AppUpdater {
   constructor() {
@@ -109,6 +110,7 @@ const createWindow = async () => {
   });
 
   registerMainProcessListeners();
+  registerSqPicModule();
 
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
