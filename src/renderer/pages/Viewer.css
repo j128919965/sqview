@@ -1,3 +1,35 @@
 .p-v-pic_list {
 
 }
+
+.p-v-showbtn {
+    cursor: pointer;
+}
+
+.p-d-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    user-select: none;
+
+}
+
+.p-d-mainimg {
+    height: 100%;
+}
+
+.p-d-dir {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    max-height: 90vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.p-d-close {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+}

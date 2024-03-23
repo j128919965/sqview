@@ -1,31 +1,11 @@
 import { MemoryRouter as Router, Route, Routes } from 'react-router-dom';
 import './App.css';
-import { useEffect, useState } from 'react';
-import { getSubDirs } from './utils/fileUtils';
+import { useEffect } from 'react';
 import '@fontsource/inter';
 import Fake from './fake/Fake';
 import { DownLoader } from './pages/DownLoader';
 import { Viewer } from './pages/Viewer';
-
-function Hello() {
-  const [subDirs, setSubDirs] = useState<string[]>([]);
-
-  useEffect(() => {
-    window.electron.ipcRenderer.on('open_root_dir', (args: string[]) => {
-      getSubDirs(args[0])
-        .then((res: string[]) => setSubDirs(res))
-        .catch((err: Error) => setSubDirs([err.message]));
-    });
-  }, []);
-  return (
-    <div>
-      {
-        subDirs.length === 0 ? <Fake /> : <DownLoader />
-      }
-    </div>
-  );
-}
-
+import Import from './pages/Import';
 
 export default function App() {
 
@@ -34,13 +14,16 @@ export default function App() {
       window.globalState['root_dir'] = args[0];
     });
   }, []);
+
+
   return (
     <Router>
       <Routes>
-        <Route path='/' element={<Fake />} />
+        <Route path='/' element={<Fake />}/>
         <Route path='/fetch' element={<DownLoader />} />
         <Route path='/view' element={<Viewer />} />
+        <Route path='/import' element={<Import />} />
       </Routes>
-    </Router>
+   </Router>
   );
 }

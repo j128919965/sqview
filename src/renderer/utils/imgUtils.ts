@@ -1,7 +1,5 @@
 export const parseDataUrl = (buf: Uint8Array): string => {
-  const s = `data:image/jpeg;base64,${uint8ArrayToBase64(buf)}`;
-  console.log(s);
-  return s;
+  return `data:image/jpeg;base64,${uint8ArrayToBase64(buf)}`;
 };
 
 
@@ -28,15 +26,15 @@ export const compressImage = (buf: Uint8Array): Promise<string | undefined> => {
       const canvas = document.createElement('canvas')
       const context = canvas.getContext('2d')!!
       // 目标尺寸
-      let targetWidth = 112
-      let targetHeight = 160
+      let targetWidth = 160
+      let targetHeight = 228
       canvas.width = targetWidth
       canvas.height = targetHeight
       context.clearRect(0, 0, targetWidth, targetHeight)
       context.fillStyle = '#fff'
       // 图片绘制
       context.drawImage(image, 0, 0, targetWidth, targetHeight)
-      let dataUrl = canvas.toDataURL('image/jpeg', 0.8)
+      let dataUrl = canvas.toDataURL('image/jpeg', 0.92)
       resolve(dataUrl)
     }
   })

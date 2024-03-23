@@ -78,6 +78,13 @@ export default class MenuBuilder {
               }
             },
             {
+              label: '重置',
+              accelerator: 'Ctrl+B',
+              click: () => {
+                mainWindow.webContents.send('back_to_root');
+              }
+            },
+            {
               label: '全屏',
               accelerator: 'F11',
               click: () => {

@@ -41,7 +41,7 @@ const decompressToString = (data: Uint8Array): Promise<string> => {
 
 
 // 封装遍历目录的函数
-function getSubDirs(directory: string): Promise<string[]> {
+function getSubFiles(directory: string): Promise<string[]> {
   return new Promise((resolve, reject) => {
     fs.readdir(directory, (err, files) => {
       if (err) {
@@ -55,7 +55,7 @@ function getSubDirs(directory: string): Promise<string[]> {
         const fullPath = path.join(directory, file);
         const stats = fs.statSync(fullPath);
 
-        if (stats.isDirectory()) {
+        if (stats.isFile()) {
           filePaths.push(file);
         }
       });
@@ -146,9 +146,9 @@ function writeFileBytes(filePath: string, data: Uint8Array): Promise<void> {
 
 // 在主进程中注册 IPC 事件监听器
 export function registerMainProcessListeners() {
-  ipcMain.handle('getSubDirs', async (event, directory) => {
+  ipcMain.handle('getSubFiles', async (event, directory) => {
     try {
-      return await getSubDirs(directory);
+      return await getSubFiles(directory);
     } catch (error) {
       console.error('Failed to traverse directory:', error);
       throw error;

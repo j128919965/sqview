@@ -42,7 +42,6 @@ export const sendPicRequest = async (str: string): Promise<Uint8Array | undefine
 
 export const downLoadGroup = async (lastUrl: string, rootPath: string, addLog: (log: string) => void) => {
   const urls = SqPicUrlHelper.urls(lastUrl);
-  console.log(urls);
   if (!urls || urls.length == 0) {
     return;
   }
@@ -90,7 +89,8 @@ export const downLoadGroup = async (lastUrl: string, rootPath: string, addLog: (
     indexToFileName,
     indexToSmallFileName,
     createdAt: taskId,
-    name: taskId.toString()
+    name: taskId.toString(),
+    lastOpen: taskId
   };
   await writeFileBytesRenderer(path, JSON.stringify(meta));
 };

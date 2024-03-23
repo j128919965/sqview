@@ -1,7 +1,7 @@
-import { LRUCache } from 'lru-cache'
-import { readFileBytes } from '../fileUtils'
-import { parseDataUrl } from '../imgUtils'
-import { decompress } from '../zstdUtils'
+import { LRUCache } from 'lru-cache';
+import { readFileBytes } from '../fileUtils';
+import { parseDataUrl } from '../imgUtils';
+import { decompress } from '../zstdUtils';
 
 const options = {
   max: 500,
@@ -24,9 +24,7 @@ const load = async (filePath: string, fileType: 'blob' | 'dataUrl' = 'blob'): Pr
     }
     const buf = await decompress(compressed)
     if (fileType === 'blob') {
-      const s = parseDataUrl(buf);
-      console.log("load data url", s)
-      return s
+      return parseDataUrl(buf)
     } else {
       return new TextDecoder().decode(buf)
     }

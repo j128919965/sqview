@@ -1,26 +1,51 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Card, Input } from '@mui/joy';
 import { useNavigate } from 'react-router-dom';
 
 export default () => {
   const [counter, setCounter] = useState<number>(0);
 
-  const [url, setUrl] = useState<string>();
+  const [code, setCode] = useState<string>();
 
-  const [dataUrl, setDataUrl] = useState<string>();
+  const [showStr, setShowStr] = useState<string>();
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const saveCompress = async () => {
-    // if (!url) return;
-    // if (counter == 3 && url === 'sqview') {
+  const navigateToView = async () => {
+    if (!code) return;
+    if (counter == 1 && code === 'view') {
       navigate('/view');
-    // }
-    setDataUrl(url);
+    } else {
+      setShowStr('test1');
+    }
+  };
+
+  const navigateToFetch = async () => {
+    if (!code) return;
+    if (counter == 2 && code === 'fetch') {
+      navigate('/fetch');
+    } else {
+      setShowStr('test2');
+    }
   };
 
 
-  return <div  className='center-container'>
+  const navigateToImport = async () => {
+    if (!code) return;
+    if (counter == 3 && code === 'import') {
+      navigate('/import');
+    } else {
+      setShowStr('test3');
+    }
+  };
+
+  useEffect(() => {
+    window.electron.ipcRenderer.on('back_to_root', (args: string[]) => {
+      navigate('/');
+    });
+  }, []);
+
+  return <div className='center-container'>
     <Card sx={{ width: 320 }}>
       <div>
         <h1 style={{ textAlign: 'center' }}>{counter}</h1>
@@ -35,21 +60,22 @@ export default () => {
         >
           count++
         </Button>
-        <Input value={url || ''} onChange={(e) => {
-          setUrl(e.target.value);
+        <Input value={code || ''} onChange={(e) => {
+          setCode(e.target.value);
         }} />
-        <Button onClick={saveCompress}>
-          测试设置字符串
+        <Button onClick={navigateToView}>
+          测试设置字符串1
         </Button>
-        <Button onClick={()=>navigate('/fetch')}>
-          测试设置字符串W
+        <Button onClick={navigateToFetch}>
+          测试设置字符串2
+        </Button>
+        <Button onClick={navigateToImport}>
+          测试设置字符串3
         </Button>
         <br />
         <div>
-          {dataUrl}
+          {showStr}
         </div>
-
-
       </div>
 
     </Card>

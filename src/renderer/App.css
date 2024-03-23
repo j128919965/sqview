@@ -2,7 +2,12 @@
  * @NOTE: Prepend a `~` to css file paths that are in your node_modules
  *        See https://github.com/webpack-contrib/sass-loader#imports
  */
+html {
+  margin: 0;
+  padding: 0;
+}
 body {
+  margin: 0;
   position: relative;
   color: white;
   height: 100vh;

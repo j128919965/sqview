@@ -8,7 +8,6 @@ const Image = ({ id, fileType, ...restProps }) => {
   useEffect(() => {
     const fetchImageUrl = async () => {
       try {
-        console.log('getting data');
         const dataUrl = await dataUrlCache.get(id, fileType);
         if (dataUrl) {
           setImageUrl(dataUrl);

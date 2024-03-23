@@ -1,8 +1,8 @@
 // 在渲染进程中调用 IPC 方法
-export function getSubDirs(
+export function getSubFiles(
   directory: string
 ): Promise<string[]> {
-  return window.electron.ipcRenderer.invoke('getSubDirs', directory);
+  return window.electron.ipcRenderer.invoke('getSubFiles', directory);
 }
 
 export async function readFileBytes(filePath: string): Promise<Uint8Array | undefined> {
