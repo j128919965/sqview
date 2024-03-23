@@ -6,6 +6,7 @@ import { Card, Input, Stack, Typography } from '@mui/joy';
 import Image from '../components/Image';
 import { Done } from '@mui/icons-material';
 import DetailView from './DetailView';
+import { randomUUID } from 'node:crypto';
 
 const metaFirstPicPath = (meta: ProjectMeta) => {
   return `${window.globalState.root_dir}\\${meta.createdAt}\\${meta.indexToSmallFileName[0]}`;
@@ -43,6 +44,7 @@ export const Viewer = () => {
   const loadPreviewList = async () => {
     try {
       const metas = await loadMetas();
+      console.log(metas)
       setMetas(metas);
     } catch (e: any) {
       console.error(e);
@@ -69,7 +71,7 @@ export const Viewer = () => {
       await updateMeta(md);
     };
 
-    return <Card sx={{ width: 160 }} key={md.createdAt}>
+    return <Card sx={{ width: 160 }} key={`${md.createdAt}|${md.name}`}>
       <div>
         <Input variant='plain' value={temp}
                onChange={(e) => {
@@ -80,7 +82,7 @@ export const Viewer = () => {
                  setTimeout(() => {
                    setFocus(false);
                    setTemp(md.name);
-                 }, 50);
+                 }, 300);
                }}
                endDecorator={focus ? <Done className='p-v-showbtn' onClick={updateName} /> : <></>} />
         <Typography level='body-sm'>{new Date(md.createdAt).toLocaleString()}</Typography>
