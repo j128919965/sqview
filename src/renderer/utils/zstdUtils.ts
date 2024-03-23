@@ -1,11 +1,15 @@
 
-export const compress = (data: Buffer | string): Promise<Buffer> => {
+export const compress = (data: Uint8Array | string): Promise<Uint8Array> => {
   return window.electron.ipcRenderer.invoke('compress', data);
 };
 
 
-export const decompress = (data: Buffer): Promise<Buffer> => {
+export const decompress = (data: Uint8Array): Promise<Uint8Array> => {
   return window.electron.ipcRenderer.invoke('decompress', data);
+};
+
+export const decompressToString = (data: Uint8Array): Promise<string> => {
+  return window.electron.ipcRenderer.invoke('decompressToString', data);
 };
 
 export const randomUUID = () => {

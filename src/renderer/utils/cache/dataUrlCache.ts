@@ -5,11 +5,6 @@ import { decompress } from '../zstdUtils'
 
 const options = {
   max: 500,
-
-  // for use with tracking overall storage size
-  maxSize: 5000,
-
-  // how long to live in ms
   ttl: 1000 * 60 * 30,
   updateAgeOnGet: false,
   updateAgeOnHas: false,
@@ -29,9 +24,11 @@ const load = async (filePath: string, fileType: 'blob' | 'dataUrl' = 'blob'): Pr
     }
     const buf = await decompress(compressed)
     if (fileType === 'blob') {
-      return parseDataUrl(buf)
+      const s = parseDataUrl(buf);
+      console.log("load data url", s)
+      return s
     } else {
-      return buf.toString()
+      return new TextDecoder().decode(buf)
     }
 
   } catch (e) {

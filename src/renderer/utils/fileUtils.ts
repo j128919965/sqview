@@ -5,7 +5,7 @@ export function getSubDirs(
   return window.electron.ipcRenderer.invoke('getSubDirs', directory);
 }
 
-export async function readFileBytes(filePath: string): Promise<Buffer | undefined> {
+export async function readFileBytes(filePath: string): Promise<Uint8Array | undefined> {
   try {
     return await window.electron.ipcRenderer.invoke('readFileBytes', filePath);
   } catch (err) {
@@ -14,16 +14,26 @@ export async function readFileBytes(filePath: string): Promise<Buffer | undefine
   }
 }
 
-export function writeFileBytesRenderer(
+export async function readFileAsString(filePath: string, encoding: string): Promise<string | undefined> {
+  return await window.electron.ipcRenderer.invoke("readFileAsString", filePath, encoding);
+}
+
+export async function writeFileBytesRenderer(
   filePath: string,
-  data: Buffer | string
+  data: Uint8Array | string
 ): Promise<void> {
-  return window.electron.ipcRenderer.invoke('writeFileBytes', {
+  const v = await window.electron.ipcRenderer.invoke('writeFileBytes', {
     filePath,
     data
-  }).then(v => console.log("write file to " + filePath))
+  });
+  console.log('write file to ' + filePath);
+  return v;
 }
 
 export function mkdirs(path: string): Promise<void> {
-  return window.electron.ipcRenderer.invoke('mkdirs', path)
+  return window.electron.ipcRenderer.invoke('mkdirs', path);
+}
+
+export function getMetaPaths(path: string): Promise<string[]> {
+  return window.electron.ipcRenderer.invoke('getMetaPaths', path);
 }
