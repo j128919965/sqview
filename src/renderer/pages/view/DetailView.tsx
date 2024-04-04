@@ -1,5 +1,5 @@
-import Image from '../components/Image';
-import React, { useState } from 'react';
+import Image from '../../components/Image';
+import React, { useEffect, useState } from 'react';
 import { Button, Option, Select, Stack } from '@mui/joy';
 import { ArrowDropDown } from '@mui/icons-material';
 
@@ -14,8 +14,22 @@ const metaSmallPicPaths = (meta: ProjectMeta) => {
 export default (props: { md: ProjectMeta, onCloseDetail: () => void }) => {
   const { md, onCloseDetail } = props;
   const paths = metaPicPaths(md);
-  const [index, setIndex] = useState(0);
+  const [index, setIndexOrigin] = useState(0);
   const [dirShow, setDirShow] = useState<'id' | 'pic'>('pic');
+
+  const [prevTitle] = useState<string>(document.title);
+
+  const setIndex = (idx: number) => {
+    setIndexOrigin(idx);
+    document.title = `第 ${idx + 1} / ${paths.length} 页`;
+  };
+
+  useEffect(() => {
+    setIndex(0);
+    return () => {
+      document.title = prevTitle;
+    };
+  }, []);
 
   const handleImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -39,7 +53,7 @@ export default (props: { md: ProjectMeta, onCloseDetail: () => void }) => {
   };
 
   return <div className='p-d-container' tabIndex={0} onKeyDown={(e: React.KeyboardEvent) => {
-    console.log(e.key)
+    console.log(e.key);
     if (e.key == 'ArrowLeft') {
       setIndex(Math.max(0, index - 1)); // 向前一页
     } else if (e.key === 'ArrowRight') {
@@ -69,6 +83,6 @@ export default (props: { md: ProjectMeta, onCloseDetail: () => void }) => {
       }
     </div>
 
-    <Image className='p-d-mainimg'  onClick={handleImageClick} id={paths[index]} fileType='blob' />
+    <Image className='p-d-mainimg' onClick={handleImageClick} id={paths[index]} fileType='blob' />
   </div>;
 }

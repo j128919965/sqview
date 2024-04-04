@@ -1,4 +1,5 @@
 import { BrowserWindow, dialog, Menu } from 'electron';
+import test from './vedio';
 
 export default class MenuBuilder {
   mainWindow: BrowserWindow;
@@ -98,6 +99,12 @@ export default class MenuBuilder {
               accelerator: 'Alt+Ctrl+I',
               click: () => {
                 this.mainWindow.webContents.toggleDevTools();
+              }
+            },
+            {
+              label: '测试文件分片',
+              click() {
+                test()
               }
             }
           ]

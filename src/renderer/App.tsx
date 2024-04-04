@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import '@fontsource/inter';
 import Fake from './fake/Fake';
 import { DownLoader } from './pages/DownLoader';
-import { Viewer } from './pages/Viewer';
+import { Viewer } from './pages/view/Viewer';
 import Import from './pages/Import';
 
 export default function App() {
