@@ -1,5 +1,5 @@
 export const parseDataUrl = (buf: Uint8Array): string => {
-  return `data:image/jpeg;base64,${uint8ArrayToBase64(buf)}`;
+  return `data:image/webp;base64,${uint8ArrayToBase64(buf)}`;
 };
 
 

@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
+import { defaultViewerConfig, normalizeViewerConfig, ViewerConfig } from '../renderer/data';
 //
 // const fs = require('node:fs')
 // const path = require('node:path')
@@ -104,6 +105,36 @@ function getMetaPaths(directory: string): Promise<string[]> {
   });
 }
 
+function getViewerConfig(directory: string): Promise<ViewerConfig> {
+  return new Promise<ViewerConfig>(res => {
+    const realPath = path.join(directory, 'viewer.conf.json');
+    if (fs.existsSync(realPath)) {
+      fs.readFile(realPath, 'utf-8', (err, data) => {
+        if (!err) {
+          res(normalizeViewerConfig(JSON.parse(data)));
+        } else {
+          res(defaultViewerConfig());
+        }
+      });
+    } else {
+      res(defaultViewerConfig());
+    }
+  });
+}
+
+function updateViewerConfig(directory: string, vc: ViewerConfig): Promise<void> {
+  return new Promise<void>(res => {
+    const realPath = path.join(directory, 'viewer.conf.json');
+    fs.writeFile(realPath, JSON.stringify(vc), (err) => {
+      if (err) {
+        console.error(err);
+      } else {
+        res();
+      }
+    });
+  });
+}
+
 
 // 封装读取文件字节的函数
 function readFileBytes(filePath: string): Promise<Uint8Array> {
@@ -197,6 +228,14 @@ export function registerMainProcessListeners() {
   });
 
   ipcMain.handle('decompressToString', (e, data) => {
-      return decompressToString(data)
+    return decompressToString(data);
+  });
+
+  ipcMain.handle('getViewerConfig', (e, path) => {
+    return getViewerConfig(path);
+  });
+
+  ipcMain.handle('updateViewerConfig', (e, path, vc) => {
+    return updateViewerConfig(path, vc);
   });
 }

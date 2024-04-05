@@ -29,3 +29,22 @@ export const updateSingleMeta = async (md: ProjectMeta) => {
   const path = `${window.globalState.root_dir}\\${md.createdAt}\\meta.json`;
   await writeFileBytes(path, JSON.stringify(md));
 };
+
+export const grouping = <T>(arr: T[], keyFunc: (element: T) => string): {key: string, data: T[]}[] => {
+  const result: Record<string, T[]> = {}
+
+  arr.forEach(element => {
+    const key = keyFunc(element);
+    if (!result[key]) {
+      result[key] = []
+    }
+    result[key].push(element)
+  })
+
+  return Object.keys(result).map(key => {
+    return {
+      key,
+      data: result[key]
+    }
+  })
+};

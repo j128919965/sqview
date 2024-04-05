@@ -22,9 +22,20 @@ export class SqPicUrlHelper {
   }
 
   static urls(url: string): Array<string> {
+    const lastDot = url.lastIndexOf('.');
+    const lastSplitter = url.lastIndexOf('/');
+    const indexString = url.substring(lastSplitter + 1, lastDot);
+    const fillZero = indexString[0] === '0'
+
     const size = SqPicUrlHelper.size(url);
     const template = SqPicUrlHelper.replaceSizeToTemplate(url);
-    return Array.from({ length: size }, (_, index) => template.replace('{}', (index + 1).toString()));
+
+    function getRealUrl(index: number) {
+      const s = (index + 1).toString();
+      return fillZero ? s.padStart(indexString.length, '0') : s;
+    }
+
+    return Array.from({ length: size }, (_, index) => template.replace('{}', getRealUrl(index)));
   }
 
   static toggleSuffix(suffix: string): string {

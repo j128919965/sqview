@@ -1,5 +1,6 @@
 // 在渲染进程中调用 IPC 方法
 import { timeout } from './timeout';
+import { ViewerConfig } from '../data';
 
 export function getSubFiles(
   directory: string
@@ -38,4 +39,12 @@ export function mkdirs(path: string): Promise<void> {
 
 export function getMetaPaths(path: string): Promise<string[]> {
   return timeout(5000, () => window.electron.ipcRenderer.invoke('getMetaPaths', path));
+}
+
+export function getViewerConfig(path: string): Promise<ViewerConfig> {
+  return timeout(5000, () => window.electron.ipcRenderer.invoke('getViewerConfig', path));
+}
+
+export function updateViewerConfig(path: string, vc: ViewerConfig): Promise<void> {
+  return timeout(5000, () => window.electron.ipcRenderer.invoke('updateViewerConfig', path, vc));
 }
