@@ -108,7 +108,6 @@
     "electron-updater": "^6.1.4",
     "hls-parser": "^0.10.9",
     "lru-cache": "^10.2.0",
-    "path-browserify": "^1.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.16.0",

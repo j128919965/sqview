@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Card, Input } from '@mui/joy';
 import { useNavigate } from 'react-router-dom';
+import MenuContainer from '../components/MenuContainer';
+import { MenuItemData } from '../data';
+import { VisibilityOff } from '@mui/icons-material';
 
 export default () => {
   const [counter, setCounter] = useState<number>(0);
@@ -10,6 +13,14 @@ export default () => {
   const [showStr, setShowStr] = useState<string>();
 
   const navigate = useNavigate();
+
+  const menu: MenuItemData[] = [
+    {
+      content: <span>测试</span>,
+      icon: <VisibilityOff />,
+      onClick: e => setCounter(0)
+    }
+  ];
 
   const navigateToView = async () => {
     if (!code) return;
@@ -46,38 +57,40 @@ export default () => {
   }, []);
 
   return <div className='center-container'>
-    <Card sx={{ width: 320 }}>
-      <div>
-        <h1 style={{ textAlign: 'center' }}>{counter}</h1>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-        <Button
-          variant='solid'
-          size='md'
-          color='primary'
-          onClick={() => setCounter(counter + 1)}
-          sx={{ alignSelf: 'center', fontWeight: 600 }}
-        >
-          count++
-        </Button>
-        <Input value={code || ''} onChange={(e) => {
-          setCode(e.target.value);
-        }} />
-        <Button onClick={navigateToView}>
-          测试设置字符串1
-        </Button>
-        <Button onClick={navigateToFetch}>
-          测试设置字符串2
-        </Button>
-        <Button onClick={navigateToImport}>
-          测试设置字符串3
-        </Button>
-        <br />
+    <MenuContainer menu={menu}>
+      <Card sx={{ width: 320 }}>
         <div>
-          {showStr}
+          <h1 style={{ textAlign: 'center' }}>{counter}</h1>
         </div>
-      </div>
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+          <Button
+            variant='solid'
+            size='md'
+            color='primary'
+            onClick={() => setCounter(counter + 1)}
+            sx={{ alignSelf: 'center', fontWeight: 600 }}
+          >
+            count++
+          </Button>
+          <Input value={code || ''} onChange={(e) => {
+            setCode(e.target.value);
+          }} />
+          <Button onClick={navigateToView}>
+            测试设置字符串1
+          </Button>
+          <Button onClick={navigateToFetch}>
+            测试设置字符串2
+          </Button>
+          <Button onClick={navigateToImport}>
+            测试设置字符串3
+          </Button>
+          <br />
+          <div>
+            {showStr}
+          </div>
+        </div>
 
-    </Card>
+      </Card>
+    </MenuContainer>
   </div>;
 };

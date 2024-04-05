@@ -1,4 +1,4 @@
-const ffmpeg = require('fluent-ffmpeg');
+
 import fs from 'node:fs';
 import { MediaPlaylist } from 'hls-parser/types';
 import { exec } from 'node:child_process';

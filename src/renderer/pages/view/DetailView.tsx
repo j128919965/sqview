@@ -2,6 +2,7 @@ import Image from '../../components/Image';
 import React, { useEffect, useState } from 'react';
 import { Button, Option, Select, Stack } from '@mui/joy';
 import { ArrowDropDown } from '@mui/icons-material';
+import { ProjectMeta } from '../../data';
 
 const metaPicPaths = (meta: ProjectMeta) => {
   return meta.indexToFileName.map(id => `${window.globalState.root_dir}\\${meta.createdAt}\\${id}`);

@@ -20,7 +20,7 @@ export async function readFileAsString(filePath: string, encoding: string): Prom
   return await timeout(5000, () => window.electron.ipcRenderer.invoke('readFileAsString', filePath, encoding));
 }
 
-export async function writeFileBytesRenderer(
+export async function writeFileBytes(
   filePath: string,
   data: Uint8Array | string
 ): Promise<void> {

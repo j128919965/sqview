@@ -1,10 +1,11 @@
-import { getSubFiles, mkdirs, readFileBytes, writeFileBytesRenderer } from '../utils/fileUtils';
+import { getSubFiles, mkdirs, readFileBytes, writeFileBytes } from '../utils/fileUtils';
 import { compress, randomUUID } from '../utils/zstdUtils';
 import { compressImage } from '../utils/imgUtils';
 import { Button, Input, List, ListItem, ListItemContent, ListItemDecorator } from '@mui/joy';
 import { useState } from 'react';
 import Toast from '../components';
 import { Home } from '@mui/icons-material';
+import { ProjectMeta } from '../data';
 
 const importGourp = async (originPath: string, addLog: (log: string) => void) => {
   const taskId: number = Date.now();
@@ -27,14 +28,14 @@ const importGourp = async (originPath: string, addLog: (log: string) => void) =>
         const uuid = randomUUID();
 
         const path = `${dirPath}\\${uuid}`;
-        await writeFileBytesRenderer(path, compressed);
+        await writeFileBytes(path, compressed);
 
         const smallUUID = randomUUID();
         const compressedImage = await compressImage(buf);
 
         const smallImg = await compress(compressedImage!!);
         const smallPath = `${dirPath}\\${smallUUID}`;
-        await writeFileBytesRenderer(smallPath, smallImg);
+        await writeFileBytes(smallPath, smallImg);
         indexToSmallFileName[i] = smallUUID;
         indexToFileName[i] = uuid;
         addLog(`导入第 ${i} 个文件成功`)
@@ -54,7 +55,7 @@ const importGourp = async (originPath: string, addLog: (log: string) => void) =>
     lastOpen: taskId
   };
 
-  await writeFileBytesRenderer(path, JSON.stringify(meta));
+  await writeFileBytes(path, JSON.stringify(meta));
   addLog(`全部文件导入成功`)
   Toast.success('导入成功')
 };

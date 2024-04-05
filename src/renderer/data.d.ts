@@ -1,3 +1,5 @@
+import React, { ReactElement } from 'react';
+
 interface ProjectMeta {
   indexToFileName: string[],
   indexToSmallFileName: string[],
@@ -7,4 +9,14 @@ interface ProjectMeta {
   artist?: string,
   tags?: string[],
   hide?: boolean
+}
+
+interface MenuItemData {
+  icon?: ReactElement,
+  onClick?: (e: React.MouseEvent) => void
+  content: string | ReactElement
+}
+
+interface ViewerConfig {
+  grouping: undefined | 'artist'
 }

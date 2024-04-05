@@ -1,6 +1,7 @@
-import { mkdirs, writeFileBytesRenderer } from './fileUtils';
+import { mkdirs, writeFileBytes } from './fileUtils';
 import { compress, randomUUID } from './zstdUtils';
 import { compressImage } from './imgUtils';
+import { ProjectMeta } from '../data';
 
 
 export class SqPicUrlHelper {
@@ -63,14 +64,14 @@ export const downLoadGroup = async (lastUrl: string, rootPath: string, addLog: (
         const uuid = randomUUID();
 
         const path = `${dirPath}\\${uuid}`;
-        await writeFileBytesRenderer(path, compressed);
+        await writeFileBytes(path, compressed);
 
         const smallUUID = randomUUID();
         const compressedImage = await compressImage(buf);
 
         const smallImg = await compress(compressedImage!!);
         const smallPath = `${dirPath}\\${smallUUID}`;
-        await writeFileBytesRenderer(smallPath, smallImg);
+        await writeFileBytes(smallPath, smallImg);
         addLog(`第${i + 1}张图片，下载成功`);
         indexToSmallFileName[i] = smallUUID;
         indexToFileName[i] = uuid;
@@ -92,5 +93,5 @@ export const downLoadGroup = async (lastUrl: string, rootPath: string, addLog: (
     name: taskId.toString(),
     lastOpen: taskId
   };
-  await writeFileBytesRenderer(path, JSON.stringify(meta));
+  await writeFileBytes(path, JSON.stringify(meta));
 };

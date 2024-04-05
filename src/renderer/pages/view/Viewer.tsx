@@ -1,35 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { getMetaPaths, readFileAsString, writeFileBytesRenderer } from '../../utils/fileUtils';
 import '../Viewer.css';
 import Toast from '../../components';
 import { Stack } from '@mui/joy';
 import DetailView from './DetailView';
 import PreviewCard from './PreviewCard';
-import { ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material';
-import { Person, VisibilityOff } from '@mui/icons-material';
-import EditableText from '../../components/EditableText';
-
-const loadMetas = async (): Promise<ProjectMeta[]> => {
-  const rootDir = window.globalState.root_dir;
-  if (!rootDir) {
-    throw new Error('root dir not choosed');
-  }
-  const metaPaths = await getMetaPaths(rootDir);
-
-  const metas: ProjectMeta[] = [];
-  for (let metaPath of metaPaths) {
-    const str = await readFileAsString(metaPath, 'utf-8');
-    if (!str) {
-      continue;
-    }
-    const meta: ProjectMeta = JSON.parse(str);
-    metas.push(meta);
-  }
-
-  metas.sort((a: ProjectMeta, b: ProjectMeta) => b.lastOpen - a.lastOpen);
-
-  return metas;
-};
+import { VisibilityOff } from '@mui/icons-material';
+import { MenuItemData, ProjectMeta } from '../../data';
+import MenuContainer from '../../components/MenuContainer';
+import { loadAllMetas, updateSingleMeta } from '../../utils/metaUtils';
 
 
 export const Viewer = () => {
@@ -38,16 +16,19 @@ export const Viewer = () => {
   const [selectedMd, setSelectedMd] = useState<ProjectMeta>();
   const viewerRef = useRef<any>(null);
   const [seeHide, setSeeHide] = useState(false);
-  const [contextMenu, setContextMenu] = React.useState<{
-    mouseX: number;
-    mouseY: number;
-  } | null>(null);
+
+  const menu: MenuItemData[] = [
+    {
+      icon: <VisibilityOff />,
+      content: seeHide ? '不显示隐藏项' : '仅显示隐藏项',
+      onClick: () => setSeeHide(!seeHide)
+    }
+  ];
 
   const loadPreviewList = async () => {
     try {
-      const metas = await loadMetas();
+      const metas = await loadAllMetas();
       setMetas(metas);
-
     } catch (e: any) {
       console.error(e);
       Toast.error('加载失败 , ' + e.message);
@@ -55,23 +36,10 @@ export const Viewer = () => {
   };
 
   const updateMeta = async (md: ProjectMeta, refreshList: boolean) => {
-    const path = `${window.globalState.root_dir}\\${md.createdAt}\\meta.json`;
-    await writeFileBytesRenderer(path, JSON.stringify(md));
+    await updateSingleMeta(md);
     metas.sort((a: ProjectMeta, b: ProjectMeta) => b.lastOpen - a.lastOpen);
     if (refreshList) {
       setMetas([...metas]);
-    }
-  };
-
-  const openContextMenu = (event: React.MouseEvent) => {
-    event.preventDefault();
-    if (contextMenu === null) {
-      setContextMenu({
-        mouseX: event.clientX + 2,
-        mouseY: event.clientY - 6
-      });
-    } else {
-      setContextMenu(null);
     }
   };
 
@@ -82,17 +50,13 @@ export const Viewer = () => {
     } else {
       loadPreviewList();
     }
-
   }, []);
 
-  return <div style={{height:'100vh'}} onContextMenu={openContextMenu}> {
-    selectedMd ? <DetailView onCloseDetail={() => {
-        setMetas([...metas]);
-        setSelectedMd(undefined);
-      }} md={selectedMd} /> :
+  function showPreviewList() {
+    return <MenuContainer style={{ height: '100vh' }} menu={menu}>
       <Stack
         ref={viewerRef} spacing={2} direction='row' justifyContent='center' flexWrap='wrap'
-             sx={{ overflowY: 'auto', maxHeight: '100vh' }} useFlexGap>
+        sx={{ overflowY: 'auto', maxHeight: '100vh' }} useFlexGap>
         {
           !metas ? <h1>预览加载中</h1> : metas
             .filter(md => seeHide ? md.hide : !md.hide)
@@ -104,25 +68,19 @@ export const Viewer = () => {
             />)
         }
       </Stack>
+    </MenuContainer>;
   }
-    <Menu
-      open={contextMenu != null}
-      onClose={() => setContextMenu(null)}
-      anchorReference='anchorPosition'
-      anchorPosition={
-        contextMenu !== null
-          ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
-          : undefined
-      }
-    >
-      <MenuItem key='desc' onClick={async () => {
-        setSeeHide(!seeHide);
-      }}>
-        <ListItemIcon>
-          <VisibilityOff />
-        </ListItemIcon>
-        <ListItemText>{seeHide ? '不显示隐藏项' : '仅显示隐藏项'}</ListItemText>
-      </MenuItem>
-    </Menu>
+
+  function showDetail() {
+    return <DetailView onCloseDetail={() => {
+      setMetas([...metas]);
+      setSelectedMd(undefined);
+    }} md={selectedMd!!} />;
+  }
+
+  return <div style={{ height: '100vh' }}>
+    {
+      selectedMd ? showDetail() : showPreviewList()
+    }
   </div>;
 };
