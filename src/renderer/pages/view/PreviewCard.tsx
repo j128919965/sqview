@@ -16,8 +16,8 @@ export default (props: {
   const { updateMeta, selectMd } = props;
   const [md, setMd] = useState<ProjectMeta>(props.md);
 
-  const updateMd = async () => {
-    await updateMeta(md, false);
+  const updateMd = async (refreshList: boolean) => {
+    await updateMeta(md, refreshList);
     setMd({ ...md });
   };
 
@@ -30,7 +30,7 @@ export default (props: {
                       placeHolder='请输入作者'
                       onSave={async str => {
                         md.artist = str;
-                        await updateMd();
+                        await updateMd(true);
                       }} /></div>
     },
     {
@@ -48,7 +48,7 @@ export default (props: {
       <div>
         <EditableText defaultValue={md.name} onSave={async str => {
           md.name = str;
-          await updateMd();
+          await updateMd(false);
         }} />
         <Typography level='body-sm'>{new Date(md.createdAt).toLocaleString()}</Typography>
       </div>

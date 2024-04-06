@@ -44,13 +44,13 @@ export const Viewer = () => {
     await updateViewerConfig(window.globalState.root_dir, _vc);
   };
 
-  const nextGroupingType = () => {
+  const nextGroupingType = async () => {
     if (viewerConfig.grouping === 'none') {
       viewerConfig.grouping = 'artist';
     } else {
       viewerConfig.grouping = 'none';
     }
-    setViewerConfig(viewerConfig);
+    await setViewerConfig(viewerConfig);
   };
 
   const updateMeta = async (md: ProjectMeta, refreshList: boolean) => {
