@@ -2,6 +2,7 @@ import { LRUCache } from 'lru-cache';
 import { readFileBytes } from '../fileUtils';
 import { parseDataUrl } from '../imgUtils';
 import { decompress } from '../zstdUtils';
+import { FileType } from '../../data';
 
 const options = {
   max: 500,
@@ -16,7 +17,7 @@ interface Optional<T> {
 
 const cache = new LRUCache<string, Optional<string>>(options)
 
-const load = async (filePath: string, fileType: 'blob' | 'dataUrl' = 'blob'): Promise<string | undefined> => {
+const load = async (filePath: string, fileType: FileType = 'blob'): Promise<string | undefined> => {
   try {
     const compressed = await readFileBytes(filePath)
     if (!compressed) {
@@ -37,7 +38,7 @@ const load = async (filePath: string, fileType: 'blob' | 'dataUrl' = 'blob'): Pr
 
 export const dataUrlCache = {
 
-  get: async (filePath: string, fileType: 'blob' | 'dataUrl' = 'blob'): Promise<string | undefined> => {
+  get: async (filePath: string, fileType: FileType = 'blob'): Promise<string | undefined> => {
     const d = cache.get(filePath)
     if (d) {
       return d.data

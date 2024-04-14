@@ -60,7 +60,7 @@ export default (props: {
              await updateMeta(md, false);
            }}
       >
-        <Image id={metaFirstPicPath(md)} fileType='dataUrl' height={228} width={160} />
+        <Image fd={metaFirstPicPath(md)} fileType='dataUrl' height={228} width={160} />
       </div>
     </Card>
   </MenuContainer>;

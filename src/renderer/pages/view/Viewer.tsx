@@ -5,7 +5,7 @@ import { Chip, Divider, Stack } from '@mui/joy';
 import DetailView from './DetailView';
 import PreviewCard from './PreviewCard';
 import { Filter, VisibilityOff } from '@mui/icons-material';
-import { defaultViewerConfig, MenuItemData, ProjectMeta, ViewerConfig } from '../../data';
+import { defaultViewerConfig, DirShow, MenuItemData, ProjectMeta, ViewerConfig } from '../../data';
 import MenuContainer from '../../components/MenuContainer';
 import { grouping, loadAllMetas, updateSingleMeta } from '../../utils/metaUtils';
 import { getViewerConfig, updateViewerConfig } from '../../utils/fileUtils';
@@ -114,6 +114,8 @@ export const Viewer = () => {
 
   function showDetail() {
     return <DetailView
+      onChangeDirShow={(dirShow: DirShow)=> setViewerConfig({...viewerConfig, dirShow})}
+      defaultDirShow={viewerConfig.dirShow}
       onCloseDetail={() => {
         setMetas([...metas]);
         setSelectedMd(undefined);

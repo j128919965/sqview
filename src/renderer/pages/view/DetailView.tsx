@@ -2,7 +2,7 @@ import Image from '../../components/Image';
 import React, { useEffect, useState } from 'react';
 import { Button, Option, Select, Stack } from '@mui/joy';
 import { ArrowDropDown } from '@mui/icons-material';
-import { ProjectMeta } from '../../data';
+import { DirShow, isDirShow, ProjectMeta } from '../../data';
 
 const metaPicPaths = (meta: ProjectMeta) => {
   return meta.indexToFileName.map(id => `${window.globalState.root_dir}\\${meta.createdAt}\\${id}`);
@@ -12,16 +12,22 @@ const metaSmallPicPaths = (meta: ProjectMeta) => {
   return meta.indexToSmallFileName.map(id => `${window.globalState.root_dir}\\${meta.createdAt}\\${id}`);
 };
 
-export default (props: { md: ProjectMeta, onCloseDetail: () => void }) => {
-  const { md, onCloseDetail } = props;
+export default (props: {
+  md: ProjectMeta,
+  defaultDirShow: DirShow
+  onCloseDetail: () => void,
+  onChangeDirShow: (dirShow: DirShow) => void
+}) => {
+  const { md, onCloseDetail, defaultDirShow, onChangeDirShow } = props;
   const paths = metaPicPaths(md);
   const [index, setIndexOrigin] = useState(0);
-  const [dirShow, setDirShow] = useState<'id' | 'pic'>('pic');
+  const [dirShow, setDirShow] = useState<DirShow>(defaultDirShow);
 
   const [prevTitle] = useState<string>(document.title);
 
   const setIndex = (idx: number) => {
     setIndexOrigin(idx);
+    document.getElementById(`detail-index-${idx}`)?.scrollIntoView({ behavior: 'smooth' });
     document.title = `第 ${idx + 1} / ${paths.length} 页`;
   };
 
@@ -48,7 +54,10 @@ export default (props: { md: ProjectMeta, onCloseDetail: () => void }) => {
   const idDir = () => {
     return <Stack>{
       Array.from({ length: paths.length }, (_, i) => i)
-        .map(i => <Button variant='plain' onClick={() => setIndex(i)} key={i}>第 {i + 1} 页</Button>)
+        .map(i => <Button variant={i == index ? 'solid' : 'plain'}
+                          id={`detail-index-${i}`}
+                          onClick={() => setIndex(i)}
+                          key={i}>第 {i + 1} 页</Button>)
     }
     </Stack>;
   };
@@ -62,11 +71,17 @@ export default (props: { md: ProjectMeta, onCloseDetail: () => void }) => {
     }
   }}>
     <div className='p-d-close '><Button onClick={() => onCloseDetail()}>关闭</Button></div>
-    <div className='p-d-dir'>
-      <Select defaultValue='pic'
-              onChange={(e, n) => {
-                // @ts-ignore
+    <div className='p-d-dir-container'>
+      <Select defaultValue={dirShow}
+              onChange={(e, n: string|null) => {
+                if (!isDirShow(n)) {
+                  return
+                }
                 setDirShow(n);
+                onChangeDirShow(n);
+                setTimeout(() => {
+                  document.getElementById(`detail-index-${index}`)?.scrollIntoView({ behavior: 'smooth' });
+                }, 200);
               }}
               indicator={<ArrowDropDown />}
               sx={{ marginBottom: 1 }}
@@ -74,16 +89,23 @@ export default (props: { md: ProjectMeta, onCloseDetail: () => void }) => {
         <Option value='id'>页码</Option>
         <Option value='pic'>缩略图</Option>
       </Select>
-      {
-        dirShow == 'id' ? idDir()
-          : <Stack spacing={1} direction='column'>{metaSmallPicPaths(md)
-            .map((path: string, i: number) => <Image
-              onClick={() => setIndex(i)}
-              width={112} id={path}
-              key={path} fileType='dataUrl' />)}</Stack>
-      }
+      <div className='p-d-dir'>
+        {
+          dirShow == 'id' ? idDir()
+            : <Stack spacing={1} direction='column' alignItems='center'>{metaSmallPicPaths(md)
+              .map((path: string, i: number) => <Image
+                style={{
+                  border: i == index ? '2px solid blue' : ''
+                }}
+                id={`detail-index-${i}`}
+                onClick={() => setIndex(i)}
+                width={i == index ? 112 : 92} fd={path}
+                key={path} fileType='dataUrl' />)}</Stack>
+        }
+      </div>
+
     </div>
 
-    <Image className='p-d-mainimg' onClick={handleImageClick} id={paths[index]} fileType='blob' />
+    <Image className='p-d-mainimg' onClick={handleImageClick} fd={paths[index]} fileType='blob' />
   </div>;
 }

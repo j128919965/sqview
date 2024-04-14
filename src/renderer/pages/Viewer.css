@@ -20,12 +20,18 @@
 }
 
 .p-d-dir {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    max-height: 90vh;
     overflow-y: auto;
     overflow-x: hidden;
+}
+
+.p-d-dir-container{
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  height: 95vh;
+
+  display: flex;
+  flex-direction: column;
 }
 
 .p-d-close {

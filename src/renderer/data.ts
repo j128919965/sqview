@@ -19,16 +19,30 @@ export interface MenuItemData {
 
 export interface ViewerConfig {
   grouping: 'none' | 'artist';
+  dirShow: DirShow
 }
 
 export const defaultViewerConfig = (): ViewerConfig => {
   return {
-    grouping: 'none'
+    grouping: 'none',
+    dirShow: 'pic'
   };
 };
 
 export const normalizeViewerConfig = (json: any): ViewerConfig => {
   return {
-    grouping: json.grouping ?? 'none'
+    grouping: json.grouping ?? 'none',
+    dirShow: json.dirShow ?? 'pic'
   };
 };
+
+export type DirShow = 'id' | 'pic'
+
+export const isDirShow = (str: string | null): str is DirShow => {
+  if (!str) {
+    return false;
+  }
+  return str == 'id' || str == 'pic'
+}
+
+export type FileType = 'blob' | 'dataUrl'
