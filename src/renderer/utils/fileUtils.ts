@@ -48,3 +48,7 @@ export function getViewerConfig(path: string): Promise<ViewerConfig> {
 export function updateViewerConfig(path: string, vc: ViewerConfig): Promise<void> {
   return timeout(5000, () => window.electron.ipcRenderer.invoke('updateViewerConfig', path, vc));
 }
+
+export function chooseDirectory(): Promise<string | undefined> {
+  return window.electron.ipcRenderer.invoke('chooseDirectory');
+}

@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron';
+import { dialog, ipcMain } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 import { defaultViewerConfig, normalizeViewerConfig, ViewerConfig } from '../renderer/data';
@@ -175,6 +175,23 @@ function writeFileBytes(filePath: string, data: Uint8Array): Promise<void> {
   });
 }
 
+function chooseDirectory(): Promise<string | undefined> {
+  return new Promise(res => {
+    dialog.showOpenDialog({
+      properties: ['openDirectory']
+    }).then(result => {
+      if (!result.canceled) {
+        res(result.filePaths[0]);
+      } else {
+        res(undefined);
+      }
+    }).catch(err => {
+      console.error(err);
+      res(undefined);
+    });
+  });
+}
+
 // 在主进程中注册 IPC 事件监听器
 export function registerMainProcessListeners() {
   ipcMain.handle('getSubFiles', async (event, directory) => {
@@ -238,4 +255,8 @@ export function registerMainProcessListeners() {
   ipcMain.handle('updateViewerConfig', (e, path, vc) => {
     return updateViewerConfig(path, vc);
   });
+
+  ipcMain.handle('chooseDirectory' , (e)=>{
+    return chooseDirectory();
+  })
 }

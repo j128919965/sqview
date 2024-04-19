@@ -2,6 +2,7 @@ import { mkdirs, writeFileBytes } from './fileUtils';
 import { compress, randomUUID } from './zstdUtils';
 import { compressImage } from './imgUtils';
 import { ProjectMeta } from '../data';
+import Toast from '../components';
 
 
 export class SqPicUrlHelper {
@@ -52,8 +53,10 @@ export const sendPicRequest = async (str: string): Promise<Uint8Array | undefine
     });
 };
 
-export const downLoadGroup = async (lastUrl: string, rootPath: string, addLog: (log: string) => void) => {
-  const urls = SqPicUrlHelper.urls(lastUrl);
+export const loadAndSaveGroup = async (urls: string[],
+                                       addLog: (log: string) => void,
+                                       loadOriginPic: (url: string) => Promise<Uint8Array | undefined>
+) => {
   if (!urls || urls.length == 0) {
     return;
   }
@@ -61,14 +64,17 @@ export const downLoadGroup = async (lastUrl: string, rootPath: string, addLog: (
   const taskId: number = Date.now();
   const indexToFileName: (string | undefined)[] = [];
   const indexToSmallFileName: (string | undefined)[] = [];
-  const dirPath = `${rootPath}\\${taskId}`;
+  const dirPath = `${window.globalState.root_dir}\\${taskId}`;
   await mkdirs(dirPath);
-
 
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
     addLog(`正在加载第${i + 1}张图片，url： ${url}`);
-    const buf: Uint8Array | undefined = await sendPicRequest(url);
+    const buf: Uint8Array | undefined = await loadOriginPic(url)
+      .catch(err => {
+        console.error(err);
+        return undefined;
+      });
     if (buf) {
       try {
         const compressed = await compress(buf);
@@ -83,7 +89,7 @@ export const downLoadGroup = async (lastUrl: string, rootPath: string, addLog: (
         const smallImg = await compress(compressedImage!!);
         const smallPath = `${dirPath}\\${smallUUID}`;
         await writeFileBytes(smallPath, smallImg);
-        addLog(`第${i + 1}张图片，下载成功`);
+        addLog(`第${i + 1}张图片，加载成功`);
         // 有失败，对应的图片应该是 undefined
         indexToSmallFileName[i] = smallUUID;
         indexToFileName[i] = uuid;
@@ -106,4 +112,6 @@ export const downLoadGroup = async (lastUrl: string, rootPath: string, addLog: (
     lastOpen: taskId
   };
   await writeFileBytes(path, JSON.stringify(meta));
+  addLog(`全部文件加载成功`);
+  Toast.success('加载成功');
 };
