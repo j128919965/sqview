@@ -17,20 +17,11 @@ const Image: React.FC<ImageProps> = ({ fd, fileType, ...restProps }) => {
   const [ready, setReady] = useState<boolean>(false);
 
   useEffect(() => {
-    const fetchImageUrl = async () => {
-      if (fd) {
-        try {
-          const dataUrl = await dataUrlCache.get(fd, fileType);
-          if (dataUrl) {
-            setImageUrl(dataUrl);
-          }
-        } catch (error) {
-          console.error('Error fetching image URL:', error);
-        }
-      }
-    };
-
-    fetchImageUrl();
+    if (fd) {
+      dataUrlCache.get(fd, fileType)
+        .then(dataUrl => dataUrl && setImageUrl(dataUrl))
+        .catch(err => console.error('Error fetching image URL:', err));
+    }
   }, [fd]); // 当id改变时，重新获取图片URL
 
   return <>

@@ -18,7 +18,7 @@ export default () => {
     {
       content: <span>测试</span>,
       icon: <VisibilityOff />,
-      onClick: e => setCounter(0)
+      onClick: () => setCounter(0)
     }
   ];
 
@@ -51,7 +51,7 @@ export default () => {
   };
 
   useEffect(() => {
-    window.electron.ipcRenderer.on('back_to_root', (args: string[]) => {
+    window.electron.ipcRenderer.on('back_to_root', () => {
       navigate('/');
     });
   }, []);

@@ -8,7 +8,7 @@ import { defaultViewerConfig, normalizeViewerConfig, ViewerConfig } from '../ren
 const ZstdCodec = require('zstd-codec').ZstdCodec;
 
 const compress = (data: Uint8Array | string): Promise<Uint8Array> => {
-  return new Promise<Uint8Array>((resolve, reject) => {
+  return new Promise<Uint8Array>((resolve) => {
     ZstdCodec.run((zstd: any) => {
       const streaming = new zstd.Streaming();
       if (typeof data === 'string') {
@@ -19,8 +19,8 @@ const compress = (data: Uint8Array | string): Promise<Uint8Array> => {
   });
 
 };
-const decompress = (data: Uint8Array, dataType: 'blob' | 'string' = 'blob'): Promise<Uint8Array> => {
-  return new Promise<Uint8Array>((resolve, reject) => {
+const decompress = (data: Uint8Array): Promise<Uint8Array> => {
+  return new Promise<Uint8Array>((resolve) => {
     ZstdCodec.run((zstd: any) => {
       const streaming = new zstd.Streaming();
       const decompressed = streaming.decompress(data, undefined);
@@ -31,7 +31,7 @@ const decompress = (data: Uint8Array, dataType: 'blob' | 'string' = 'blob'): Pro
 };
 
 const decompressToString = (data: Uint8Array): Promise<string> => {
-  return new Promise<string>((resolve, reject) => {
+  return new Promise<string>((resolve) => {
     ZstdCodec.run((zstd: any) => {
       const streaming = new zstd.Streaming();
       resolve(new TextDecoder().decode(streaming.decompress(data, undefined)));
@@ -67,7 +67,7 @@ function getSubFiles(directory: string): Promise<string[]> {
 }
 
 const getMetaPathInCurrentPath = async (dirPath: string): Promise<string | undefined> => {
-  return new Promise<string | undefined>((res, rej) => {
+  return new Promise<string | undefined>((res) => {
     fs.readdir(dirPath, (err, files) => {
       if (!err && files.indexOf('meta.json') >= 0) {
         res(path.join(dirPath, 'meta.json'));
@@ -151,7 +151,7 @@ function readFileBytes(filePath: string): Promise<Uint8Array> {
 
 function readFileAsString(filePath: string, encoding: BufferEncoding): Promise<string> {
   return new Promise((resolve, reject) => {
-    fs.readFile(filePath, 'utf-8', (err, data) => {
+    fs.readFile(filePath, encoding, (err, data) => {
       if (err) {
         reject(err);
         return;
@@ -194,7 +194,7 @@ function chooseDirectory(): Promise<string | undefined> {
 
 // 在主进程中注册 IPC 事件监听器
 export function registerMainProcessListeners() {
-  ipcMain.handle('getSubFiles', async (event, directory) => {
+  ipcMain.handle('getSubFiles', async (_, directory) => {
     try {
       return await getSubFiles(directory);
     } catch (error) {
@@ -203,7 +203,7 @@ export function registerMainProcessListeners() {
     }
   });
 
-  ipcMain.handle('readFileBytes', async (event, filePath) => {
+  ipcMain.handle('readFileBytes', async (_, filePath) => {
     try {
       return await readFileBytes(filePath);
     } catch (error) {
@@ -212,7 +212,7 @@ export function registerMainProcessListeners() {
     }
   });
 
-  ipcMain.handle('writeFileBytes', async (event, { filePath, data }) => {
+  ipcMain.handle('writeFileBytes', async (_, { filePath, data }) => {
     try {
       await writeFileBytes(filePath, data);
     } catch (error) {
@@ -221,42 +221,42 @@ export function registerMainProcessListeners() {
     }
   });
 
-  ipcMain.handle('compress', (e, buf) => {
+  ipcMain.handle('compress', (_, buf) => {
     return compress(buf);
   });
 
-  ipcMain.handle('decompress', (e, buf) => {
+  ipcMain.handle('decompress', (_, buf) => {
     return decompress(buf);
   });
 
 
-  ipcMain.handle('getMetaPaths', (e, path) => {
+  ipcMain.handle('getMetaPaths', (_, path) => {
     return getMetaPaths(path);
   });
 
-  ipcMain.handle('mkdirs', (e, path) => {
-    return new Promise((res, rej) => {
+  ipcMain.handle('mkdirs', (_, path) => {
+    return new Promise((res) => {
       fs.mkdir(path, { recursive: true }, () => res(true));
     });
   });
 
-  ipcMain.handle('readFileAsString', (e, path, encoding) => {
+  ipcMain.handle('readFileAsString', (_, path, encoding) => {
     return readFileAsString(path, encoding);
   });
 
-  ipcMain.handle('decompressToString', (e, data) => {
+  ipcMain.handle('decompressToString', (_, data) => {
     return decompressToString(data);
   });
 
-  ipcMain.handle('getViewerConfig', (e, path) => {
+  ipcMain.handle('getViewerConfig', (_, path) => {
     return getViewerConfig(path);
   });
 
-  ipcMain.handle('updateViewerConfig', (e, path, vc) => {
+  ipcMain.handle('updateViewerConfig', (_, path, vc) => {
     return updateViewerConfig(path, vc);
   });
 
-  ipcMain.handle('chooseDirectory' , (e)=>{
+  ipcMain.handle('chooseDirectory', () => {
     return chooseDirectory();
-  })
+  });
 }

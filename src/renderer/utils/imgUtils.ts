@@ -16,12 +16,12 @@ function uint8ArrayToBase64(u8Array: Uint8Array) {
 }
 
 export const compressImage = (buf: Uint8Array): Promise<string | undefined> => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     let data = parseDataUrl(buf);
     // 文件读取完成时触发
     const image = new Image();
     image.src = data;
-    image.onload = async e => {
+    image.onload = async () => {
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d')!!;
       // 目标尺寸
