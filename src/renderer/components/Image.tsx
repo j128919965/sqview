@@ -5,7 +5,7 @@ import { FileType } from '../data';
 
 // 定义 Image 组件的 props 类型
 interface ImageProps {
-  fd: string; // 假设 fd 是一个字符串
+  fd?: string; // 文件描述符
   fileType: FileType; // 假设 fileType 是一个字符串
   // 其他可能的 props 类型...
   // ...restProps 可以是任何剩余的合法 React 属性类型
@@ -18,13 +18,15 @@ const Image: React.FC<ImageProps> = ({ fd, fileType, ...restProps }) => {
 
   useEffect(() => {
     const fetchImageUrl = async () => {
-      try {
-        const dataUrl = await dataUrlCache.get(fd, fileType);
-        if (dataUrl) {
-          setImageUrl(dataUrl);
+      if (fd) {
+        try {
+          const dataUrl = await dataUrlCache.get(fd, fileType);
+          if (dataUrl) {
+            setImageUrl(dataUrl);
+          }
+        } catch (error) {
+          console.error('Error fetching image URL:', error);
         }
-      } catch (error) {
-        console.error('Error fetching image URL:', error);
       }
     };
 

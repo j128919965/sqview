@@ -1,8 +1,14 @@
 import { ProjectMeta } from '../data';
 import { getMetaPaths, readFileAsString, writeFileBytes } from './fileUtils';
+import { isValidString } from './stringUtils';
 
 export const metaFirstPicPath = (meta: ProjectMeta) => {
-  return `${window.globalState.root_dir}\\${meta.createdAt}\\${meta.indexToSmallFileName[0]}`;
+  for (let smallPic of meta.indexToSmallFileName) {
+    if (isValidString(smallPic)) {
+      return `${window.globalState.root_dir}\\${meta.createdAt}\\${smallPic}`;
+    }
+  }
+  return undefined;
 };
 export const loadAllMetas = async (): Promise<ProjectMeta[]> => {
   const rootDir = window.globalState.root_dir;

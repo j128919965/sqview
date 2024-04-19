@@ -25,7 +25,7 @@ export class SqPicUrlHelper {
     const lastDot = url.lastIndexOf('.');
     const lastSplitter = url.lastIndexOf('/');
     const indexString = url.substring(lastSplitter + 1, lastDot);
-    const fillZero = indexString[0] === '0'
+    const fillZero = indexString[0] === '0';
 
     const size = SqPicUrlHelper.size(url);
     const template = SqPicUrlHelper.replaceSizeToTemplate(url);
@@ -59,8 +59,8 @@ export const downLoadGroup = async (lastUrl: string, rootPath: string, addLog: (
   }
 
   const taskId: number = Date.now();
-  const indexToFileName = [];
-  const indexToSmallFileName = [];
+  const indexToFileName: (string | undefined)[] = [];
+  const indexToSmallFileName: (string | undefined)[] = [];
   const dirPath = `${rootPath}\\${taskId}`;
   await mkdirs(dirPath);
 
@@ -84,6 +84,7 @@ export const downLoadGroup = async (lastUrl: string, rootPath: string, addLog: (
         const smallPath = `${dirPath}\\${smallUUID}`;
         await writeFileBytes(smallPath, smallImg);
         addLog(`第${i + 1}张图片，下载成功`);
+        // 有失败，对应的图片应该是 undefined
         indexToSmallFileName[i] = smallUUID;
         indexToFileName[i] = uuid;
       } catch (err) {

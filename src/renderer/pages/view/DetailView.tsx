@@ -3,13 +3,22 @@ import React, { useEffect, useState } from 'react';
 import { Button, Option, Select, Stack } from '@mui/joy';
 import { ArrowDropDown } from '@mui/icons-material';
 import { DirShow, isDirShow, ProjectMeta } from '../../data';
+import { isValidString } from '../../utils/stringUtils';
+
+const idToPath = (meta: ProjectMeta,id: string|undefined) => {
+  if (isValidString(id)) {
+    return `${window.globalState.root_dir}\\${meta.createdAt}\\${id}`;
+  } else {
+    return undefined;
+  }
+}
 
 const metaPicPaths = (meta: ProjectMeta) => {
-  return meta.indexToFileName.map(id => `${window.globalState.root_dir}\\${meta.createdAt}\\${id}`);
+  return meta.indexToFileName.map(id => idToPath(meta, id));
 };
 
-const metaSmallPicPaths = (meta: ProjectMeta) => {
-  return meta.indexToSmallFileName.map(id => `${window.globalState.root_dir}\\${meta.createdAt}\\${id}`);
+const metaSmallPicPaths = (meta: ProjectMeta): (string | undefined)[] => {
+  return meta.indexToSmallFileName.map(id => idToPath(meta, id));
 };
 
 export default (props: {
@@ -73,7 +82,7 @@ export default (props: {
     <div className='p-d-close '><Button onClick={() => onCloseDetail()}>关闭</Button></div>
     <div className='p-d-dir-container'>
       <Select defaultValue={dirShow}
-              onChange={(e, n: string|null) => {
+              onChange={(_, n: string|null) => {
                 if (!isDirShow(n)) {
                   return
                 }
@@ -93,14 +102,14 @@ export default (props: {
         {
           dirShow == 'id' ? idDir()
             : <Stack spacing={1} direction='column' alignItems='center'>{metaSmallPicPaths(md)
-              .map((path: string, i: number) => <Image
+              .map((path: string | undefined, i: number) => <Image
                 style={{
                   border: i == index ? '2px solid blue' : ''
                 }}
                 id={`detail-index-${i}`}
                 onClick={() => setIndex(i)}
                 width={i == index ? 112 : 92} fd={path}
-                key={path} fileType='dataUrl' />)}</Stack>
+                key={i} fileType='dataUrl' />)}</Stack>
         }
       </div>
 

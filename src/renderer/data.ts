@@ -1,8 +1,8 @@
 import React, { ReactElement } from 'react';
 
 export interface ProjectMeta {
-  indexToFileName: string[],
-  indexToSmallFileName: string[],
+  indexToFileName: (string | undefined)[],
+  indexToSmallFileName: (string | undefined)[],
   createdAt: number,
   name: string,
   lastOpen: number,
