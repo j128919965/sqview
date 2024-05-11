@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { ipcMain } from 'electron';
 import { SqPicUrlHelper } from '../renderer/utils/picDownloader';
 
@@ -61,6 +61,10 @@ export class SqPicGetter {
       }
     } catch (e) {
       console.error(e);
+
+      if (e instanceof AxiosError) {
+        return {code: e.response?.status ?? 500, data: undefined}
+      }
       return { code: 500, data: undefined };
     }
   }
