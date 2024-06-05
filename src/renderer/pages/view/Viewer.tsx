@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import '../Viewer.css';
 import Toast from '../../components';
-import { Chip, Divider, Stack } from '@mui/joy';
+import { Button, Chip, Divider, Stack } from '@mui/joy';
 import DetailView from './DetailView';
 import PreviewCard from './PreviewCard';
-import { Filter, VisibilityOff } from '@mui/icons-material';
+import { CheckCircleOutlined, Circle, Filter, VisibilityOff } from '@mui/icons-material';
 import { defaultViewerConfig, DirShow, MenuItemData, ProjectMeta, ViewerConfig } from '../../data';
 import MenuContainer from '../../components/MenuContainer';
 import { grouping, loadAllMetas, updateSingleMeta } from '../../utils/metaUtils';
@@ -16,16 +16,24 @@ export const Viewer = () => {
   const [metas, setMetas] = useState<ProjectMeta[]>([]);
   const [selectedMd, setSelectedMd] = useState<ProjectMeta>();
   const viewerRef = useRef<any>(null);
-  const [seeHide, setSeeHide] = useState(false);
   const [viewerConfig, _setViewerConfig] = useState<ViewerConfig>(defaultViewerConfig());
+  const [loading, setLoading] = useState<boolean>(false);
+
   const loadPreviewList = async () => {
+    if (!window.globalState.root_dir) {
+      Toast.error('未选择根目录');
+      return;
+    }
+
     try {
+      setLoading(true);
       const metas = await loadAllMetas();
       setMetas(metas);
     } catch (e: any) {
       console.error(e);
       Toast.error('加载失败 , ' + e.message);
     }
+    setLoading(false);
   };
 
   const loadViewConfig = async () => {
@@ -34,23 +42,18 @@ export const Viewer = () => {
       throw new Error('root dir not choosed');
     }
     const vc = await getViewerConfig(rootDir);
-    console.log(vc)
+    console.log(vc);
     _setViewerConfig(vc);
   };
 
   const setViewerConfig = async (vc: ViewerConfig) => {
     const _vc = { ...vc };
     _setViewerConfig(_vc);
-    await updateViewerConfig(window.globalState.root_dir, _vc);
-  };
-
-  const nextGroupingType = async () => {
-    if (viewerConfig.grouping === 'none') {
-      viewerConfig.grouping = 'artist';
-    } else {
-      viewerConfig.grouping = 'none';
+    if (!window.globalState.root_dir) {
+      Toast.error('根目录未选择，无法保存配置');
+      return;
     }
-    await setViewerConfig(viewerConfig);
+    await updateViewerConfig(window.globalState.root_dir, _vc);
   };
 
   const updateMeta = async (md: ProjectMeta, refreshList: boolean) => {
@@ -79,9 +82,8 @@ export const Viewer = () => {
       return <Stack
         ref={viewerRef} spacing={2} direction='row' justifyContent='center' flexWrap='wrap' useFlexGap>
         {
-          !metaList ? <h1>预览加载中</h1> : metaList
-            .filter(md => seeHide ? md.hide : !md.hide)
-            .map(md => <PreviewCard
+          !metaList ? <h1>预览加载中</h1> :
+            metaList.map(md => <PreviewCard
               key={md.createdAt}
               md={md}
               selectMd={setSelectedMd}
@@ -91,16 +93,32 @@ export const Viewer = () => {
       </Stack>;
     };
 
+    const filterMetaByHide = (md: ProjectMeta): boolean => {
+      if (!viewerConfig) {
+        return true;
+      }
+      if (viewerConfig.hideMode === 'all') {
+        return true;
+      }
+      if (viewerConfig.hideMode === 'hide') {
+        return !md.hide;
+      }
+      if (viewerConfig.hideMode === 'onlyHide') {
+        return !!md.hide;
+      }
+      return false;
+    }
+
 
     return <MenuContainer style={{ height: '100vh', overflowY: 'auto' }} menu={menu}>
       {viewerConfig.grouping === 'none'
         ? list(metas)
         : <>{
-          grouping(metas, (md) => md.artist ?? '未填写作者')
+          grouping(metas, (md) => md.artist ?? '未填写作者', filterMetaByHide)
             .map(d => {
               return <>
-                <Divider sx={{margin: '10px 0'}}>
-                  <Chip variant="soft" color="neutral" size="lg">
+                <Divider sx={{ margin: '10px 0' }}>
+                  <Chip variant='soft' color='neutral' size='lg'>
                     {d.key}
                   </Chip>
                 </Divider>
@@ -114,7 +132,7 @@ export const Viewer = () => {
 
   function showDetail() {
     return <DetailView
-      onChangeDirShow={(dirShow: DirShow)=> setViewerConfig({...viewerConfig, dirShow})}
+      onChangeDirShow={(dirShow: DirShow) => setViewerConfig({ ...viewerConfig, dirShow })}
       defaultDirShow={viewerConfig.dirShow}
       onCloseDetail={() => {
         setMetas([...metas]);
@@ -123,23 +141,53 @@ export const Viewer = () => {
       md={selectedMd!!} />;
   }
 
-
   const menu: MenuItemData[] = [
     {
       icon: <VisibilityOff />,
-      content: seeHide ? '不显示隐藏项' : '仅显示隐藏项',
-      onClick: () => setSeeHide(!seeHide)
+      content: '隐藏方式',
+      subMenus: [
+        {
+          icon: viewerConfig?.hideMode === 'all' ? <CheckCircleOutlined /> : <Circle />,
+          content: '全部显示',
+          onClick: () => setViewerConfig({ ...viewerConfig, hideMode: 'all' })
+        },
+        {
+          icon: viewerConfig?.hideMode === 'hide' ? <CheckCircleOutlined /> : <Circle />,
+          content: '隐藏不可见',
+          onClick: () => setViewerConfig({ ...viewerConfig, hideMode: 'hide' })
+        },
+        {
+          icon: viewerConfig?.hideMode === 'onlyHide' ? <CheckCircleOutlined /> : <Circle />,
+          content: '仅显示不可见',
+          onClick: () => setViewerConfig({ ...viewerConfig, hideMode: 'onlyHide' })
+        }
+      ]
     },
     {
-      content: `筛选方式：${viewerConfig?.grouping == 'none' ? '不筛选' : '按照作者筛选'}`,
-      onClick: () => nextGroupingType(),
-      icon: <Filter />
+      content: `筛选方式`,
+      icon: <Filter />,
+      subMenus: [
+        {
+          icon: viewerConfig?.grouping === 'none' ? <CheckCircleOutlined /> : <Circle />,
+          content: '不筛选',
+          onClick: () => setViewerConfig({ ...viewerConfig, grouping: 'none' })
+        },
+        {
+          icon: viewerConfig?.grouping === 'artist' ? <CheckCircleOutlined /> : <Circle />,
+          content: '按照作者筛选',
+          onClick: () => setViewerConfig({ ...viewerConfig, grouping: 'artist' })
+        }
+      ]
     }
   ];
 
   return <div style={{ height: '100vh' }}>
     {
-      selectedMd ? showDetail() : showPreviewList()
+      loading ?
+        <div style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          加载中
+          <Button loading variant='plain' />
+        </div> : selectedMd ? showDetail() : showPreviewList()
     }
   </div>;
 };

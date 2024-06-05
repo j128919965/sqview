@@ -14,25 +14,34 @@ export interface ProjectMeta {
 export interface MenuItemData {
   icon?: ReactElement,
   onClick?: (e: React.MouseEvent) => void
-  content: string | ReactElement
+  content: string | ReactElement,
+  subMenus?: MenuItemData[]
+}
+
+export interface MenuPosition {
+  x: number,
+  y: number
 }
 
 export interface ViewerConfig {
   grouping: 'none' | 'artist';
-  dirShow: DirShow
+  dirShow: DirShow,
+  hideMode: 'all' | 'hide' | 'onlyHide'
 }
 
 export const defaultViewerConfig = (): ViewerConfig => {
   return {
     grouping: 'none',
-    dirShow: 'pic'
+    dirShow: 'pic',
+    hideMode: 'all'
   };
 };
 
 export const normalizeViewerConfig = (json: any): ViewerConfig => {
   return {
     grouping: json.grouping ?? 'none',
-    dirShow: json.dirShow ?? 'pic'
+    dirShow: json.dirShow ?? 'pic',
+    hideMode: json.hideMode ?? 'all'
   };
 };
 

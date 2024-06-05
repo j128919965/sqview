@@ -36,10 +36,13 @@ export const updateSingleMeta = async (md: ProjectMeta) => {
   await writeFileBytes(path, JSON.stringify(md));
 };
 
-export const grouping = <T>(arr: T[], keyFunc: (element: T) => string): {key: string, data: T[]}[] => {
+export const grouping = <T>(arr: T[], keyFunc: (element: T) => string, valueFilter?: (obj: T)=>boolean): {key: string, data: T[]}[] => {
   const result: Record<string, T[]> = {}
 
   arr.forEach(element => {
+    if (valueFilter && !valueFilter(element)) {
+      return;
+    }
     const key = keyFunc(element);
     if (!result[key]) {
       result[key] = []
