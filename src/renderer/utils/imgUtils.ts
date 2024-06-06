@@ -16,7 +16,7 @@ function uint8ArrayToBase64(u8Array: Uint8Array) {
 }
 
 export const compressImage = (buf: Uint8Array): Promise<string | undefined> => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let data = parseDataUrl(buf);
     // 文件读取完成时触发
     const image = new Image();
@@ -36,5 +36,9 @@ export const compressImage = (buf: Uint8Array): Promise<string | undefined> => {
       let dataUrl = canvas.toDataURL('image/jpeg', 0.92);
       resolve(dataUrl);
     };
+    image.onerror = e => {
+      console.error(e)
+      reject(e)
+    }
   });
 };

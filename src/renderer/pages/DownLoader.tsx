@@ -1,4 +1,4 @@
-import { Button, Input } from '@mui/joy';
+import { Button, Divider, Input } from '@mui/joy';
 import { useState } from 'react';
 import { loadAndSaveGroup, sendPicRequest, SqPicUrlHelper } from '../utils/picDownloader';
 import Toast from '../components';
@@ -30,10 +30,16 @@ export const DownLoader = () => {
 
 
   return <>
-    <div style={{ height: '100px', display: 'flex', flexDirection: 'column', justifyContent: 'space-around' }}>
-      <Input value={lastUrl} onChange={(e) => {
+    <div style={{
+      display: 'flex',
+      padding: '30px 100px',
+      flexDirection: 'column',
+      justifyContent: 'space-around'
+    }}>
+      <Input placeholder='请输入最后一页的url' value={lastUrl} onChange={(e) => {
         setLastUrl(e.target.value);
       }} />
+      <div style={{height: '20px'}}/>
       <Button onClick={startDownLoad}>下载</Button>
     </div>
     <Logs logs={logs} maxHeight='calc(100vh - 100px)' />

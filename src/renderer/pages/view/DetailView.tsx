@@ -77,6 +77,8 @@ export default (props: {
       setIndex(Math.max(0, index - 1)); // 向前一页
     } else if (e.key === 'ArrowRight') {
       setIndex(Math.min(paths.length - 1, index + 1)); // 向后一页
+    } else if (e.key === 'Escape') {
+      onCloseDetail()
     }
   }}>
     <div className='p-d-close '><Button onClick={() => onCloseDetail()}>关闭</Button></div>

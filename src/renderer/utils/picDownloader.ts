@@ -82,9 +82,11 @@ export const loadAndSaveGroup = async (urls: string[],
 
         const path = `${dirPath}\\${uuid}`;
         await writeFileBytes(path, compressed);
+        addLog(`第${i + 1}张图片，完成原图写入`)
 
         const smallUUID = randomUUID();
         const compressedImage = await compressImage(buf);
+
 
         const smallImg = await compress(compressedImage!!);
         const smallPath = `${dirPath}\\${smallUUID}`;

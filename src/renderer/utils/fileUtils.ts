@@ -52,3 +52,11 @@ export function updateViewerConfig(path: string, vc: ViewerConfig): Promise<void
 export function chooseDirectory(): Promise<string | undefined> {
   return window.electron.ipcRenderer.invoke('chooseDirectory');
 }
+
+export function chooseZipAndReturnDirectory(rootDir: string): Promise<string | undefined> {
+  return window.electron.ipcRenderer.invoke('chooseZipAndReturnDirectory', rootDir)
+}
+
+export function deleteDir(path: string) : Promise<void> {
+  return timeout(2000, ()=>window.electron.ipcRenderer.invoke('deleteDir', path))
+}

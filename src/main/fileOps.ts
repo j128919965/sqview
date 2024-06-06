@@ -2,6 +2,7 @@ import { dialog, ipcMain } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 import { defaultViewerConfig, normalizeViewerConfig, ViewerConfig } from '../renderer/data';
+const AdmZip = require("adm-zip");
 //
 // const fs = require('node:fs')
 // const path = require('node:path')
@@ -192,6 +193,62 @@ function chooseDirectory(): Promise<string | undefined> {
   });
 }
 
+async function unzipFileToTempDir(rootDir: string, zipFilePath: string): Promise<string> {
+  // 创建一个临时目录
+
+  const tempDirPath= rootDir + '\\temp'+ new Date().getTime();
+
+  fs.mkdirSync(tempDirPath);
+
+  fs.chmodSync(tempDirPath, '777')
+
+  // 读取ZIP文件并解压到临时目录
+  const zip = new AdmZip(zipFilePath);
+  zip.extractAllTo(tempDirPath)
+
+  // 删除ZIP文件
+  fs.unlinkSync(zipFilePath);
+
+  // 返回临时目录路径
+  return tempDirPath;
+}
+
+function deleteDir(path: string): Promise<void> {
+  return new Promise<void>((res) => {
+    fs.rm(path, { recursive: true, force: true }, (e) => {
+      if (e) {
+        console.error(e);
+      }
+      res();
+    });
+  });
+}
+
+
+function chooseZipAndReturnDirectory(rootDir: string): Promise<string | undefined> {
+  return new Promise<string | undefined>(res => {
+    dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [{
+        extensions: ['zip'],
+        name: ''
+      }]
+    }).then(async result => {
+      if (!result.canceled) {
+        const filePath = result.filePaths[0];
+        const temp = await unzipFileToTempDir(rootDir,filePath);
+        console.log(temp);
+        res(temp);
+      } else {
+        res(undefined);
+      }
+    }).catch(err => {
+      console.error(err);
+      res(undefined);
+    });
+  })
+}
+
 // 在主进程中注册 IPC 事件监听器
 export function registerMainProcessListeners() {
   ipcMain.handle('getSubFiles', async (_, directory) => {
@@ -258,5 +315,13 @@ export function registerMainProcessListeners() {
 
   ipcMain.handle('chooseDirectory', () => {
     return chooseDirectory();
+  });
+
+  ipcMain.handle('chooseZipAndReturnDirectory', (_, rootDir)=>{
+    return chooseZipAndReturnDirectory(rootDir)
+  })
+
+  ipcMain.handle('deleteDir', (_, path) => {
+    return deleteDir(path);
   });
 }
