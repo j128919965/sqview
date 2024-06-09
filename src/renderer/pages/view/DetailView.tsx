@@ -71,7 +71,16 @@ export default (props: {
     </Stack>;
   };
 
-  return <div className='p-d-container' tabIndex={0} onKeyDown={(e: React.KeyboardEvent) => {
+  return <div className='p-d-container' tabIndex={0}
+              onWheel={e => {
+                if (e.deltaY < 0) {
+                  setIndex(Math.max(0, index - 1)); // 向前一页
+                } else {
+                  setIndex(Math.min(paths.length - 1, index + 1)); // 向后一页
+                }
+              }}
+
+              onKeyDown={(e: React.KeyboardEvent) => {
     console.log(e.key);
     if (e.key == 'ArrowLeft') {
       setIndex(Math.max(0, index - 1)); // 向前一页
