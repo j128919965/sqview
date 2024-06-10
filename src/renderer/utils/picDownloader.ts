@@ -53,9 +53,14 @@ export const sendPicRequest = async (str: string): Promise<Uint8Array | undefine
     });
 };
 
+export type LoadAndSaveGroupOptions = {
+  parallel: boolean
+}
+
 export const loadAndSaveGroup = async (urls: string[],
                                        addLog: (log: string) => void,
-                                       loadOriginPic: (url: string) => Promise<Uint8Array | undefined>
+                                       loadOriginPic: (url: string) => Promise<Uint8Array | undefined>,
+                                       options?: LoadAndSaveGroupOptions
 ) => {
   if (!urls || urls.length == 0) {
     return;
@@ -67,10 +72,21 @@ export const loadAndSaveGroup = async (urls: string[],
   const dirPath = `${window.globalState.root_dir}\\${taskId}`;
   await mkdirs(dirPath);
 
+  const preLoadPromises: Promise<Uint8Array | undefined>[] = options?.parallel ? urls.map(loadOriginPic) : [];
+
+  const wrappedLoad = (url: string): Promise<Uint8Array | undefined> => {
+    if (options?.parallel) {
+      const index = urls.indexOf(url);
+      const preLoadPromise = preLoadPromises[index];
+      return preLoadPromise != null ? preLoadPromise : loadOriginPic(url);
+    }
+    return loadOriginPic(url)
+  };
+
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
     addLog(`正在加载第${i + 1}张图片，url： ${url}`);
-    const buf: Uint8Array | undefined = await loadOriginPic(url)
+    const buf: Uint8Array | undefined = await wrappedLoad(url)
       .catch(err => {
         console.error(err);
         return undefined;

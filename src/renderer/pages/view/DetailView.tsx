@@ -81,7 +81,6 @@ export default (props: {
               }}
 
               onKeyDown={(e: React.KeyboardEvent) => {
-    console.log(e.key);
     if (e.key == 'ArrowLeft') {
       setIndex(Math.max(0, index - 1)); // 向前一页
     } else if (e.key === 'ArrowRight') {

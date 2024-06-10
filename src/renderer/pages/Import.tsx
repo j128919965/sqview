@@ -40,7 +40,10 @@ export default () => {
         wrapper.logs = [...wrapper.logs, log];
         setLogs(wrapper.logs);
       },
-      readFileBytes
+      readFileBytes,
+      {
+        parallel: true
+      }
     );
 
 
