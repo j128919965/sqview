@@ -1,13 +1,19 @@
-import { Button, Divider, Input } from '@mui/joy';
+import { Button, Input } from '@mui/joy';
 import { useState } from 'react';
 import { loadAndSaveGroup, sendPicRequest, SqPicUrlHelper } from '../utils/picDownloader';
 import Toast from '../components';
 import Logs from '../components/Logs';
+import CustomProgressBar from '../components/CustomProgressBar';
+import { retryAble } from '../utils/timeout';
 
 export const DownLoader = () => {
 
   const [logs, setLogs] = useState<string[]>([]);
   const [lastUrl, setLastUrl] = useState<string>('');
+  const [success, setSuccess] = useState(0);
+  const [failure, setFailure] = useState(0);
+  const [all, setAll] = useState(0);
+  const [started, setStarted] = useState(false);
 
   const startDownLoad = async () => {
     if (!lastUrl) {
@@ -18,13 +24,30 @@ export const DownLoader = () => {
       return;
     }
     const wrapper: { logs: string[] } = { logs: [] };
+    const urls = SqPicUrlHelper.urls(lastUrl);
+
+    setAll(urls.length);
+    setStarted(true);
+    setLogs(wrapper.logs)
+    setSuccess(0)
+    setFailure(0)
+
     await loadAndSaveGroup(
-      SqPicUrlHelper.urls(lastUrl),
-      (log) => {
-        wrapper.logs = [...wrapper.logs, log];
-        setLogs(wrapper.logs);
-      },
-      sendPicRequest
+      urls,
+      (url) => retryAble(3, () => sendPicRequest(url)),
+      {
+        parallel: true,
+        onlyAddFailureLogs: true,
+        parallelLimit: 3,
+        addLog: (log) => {
+          wrapper.logs = [...wrapper.logs, log];
+          setLogs(wrapper.logs);
+        },
+        setProcess: (all, success, failure) => {
+          setSuccess(success);
+          setFailure(failure);
+        }
+      }
     );
   };
 
@@ -39,9 +62,12 @@ export const DownLoader = () => {
       <Input placeholder='请输入最后一页的url' value={lastUrl} onChange={(e) => {
         setLastUrl(e.target.value);
       }} />
-      <div style={{height: '20px'}}/>
+      <div style={{ height: '20px' }} />
       <Button onClick={startDownLoad}>下载</Button>
     </div>
+    {
+      started ? <CustomProgressBar success={success} failure={failure} all={all} /> : <></>
+    }
     <Logs logs={logs} maxHeight='calc(100vh - 100px)' />
   </>;
 };

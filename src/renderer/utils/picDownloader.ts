@@ -3,6 +3,7 @@ import { compress, randomUUID } from './zstdUtils';
 import { compressImage } from './imgUtils';
 import { ProjectMeta } from '../data';
 import Toast from '../components';
+import ConcurrencyLimiter from './ConcurrencyLimiter';
 
 
 export class SqPicUrlHelper {
@@ -54,17 +55,60 @@ export const sendPicRequest = async (str: string): Promise<Uint8Array | undefine
 };
 
 export type LoadAndSaveGroupOptions = {
-  parallel: boolean
+  parallel?: boolean,
+  addLog?: (log: string) => void,
+  setProcess?: (all: number, success: number, failure: number) => void,
+  onlyAddFailureLogs?: boolean,
+  parallelLimit?: number
 }
 
+export type PicLoadFunc = (url: string) => Promise<Uint8Array | undefined>
+
+const defaultLogAddFunction = (str: string) => {
+  console.log(str);
+};
+
+const defaultSetProcessFunction = (all: number, success: number, failure: number) => {
+  console.log(`load process: all: ${all} success: ${success} failure: ${failure}`);
+};
+
+const wrapperLoadFunc = (urls: string[],
+                         loadOriginPic: PicLoadFunc,
+                         options?: LoadAndSaveGroupOptions): PicLoadFunc => {
+  const parallel = options?.parallel ?? false;
+  if (!parallel) {
+    return loadOriginPic;
+  }
+  const limit = options?.parallelLimit ?? 0;
+  const limiter = new ConcurrencyLimiter(limit);
+  const preLoadPromises: Promise<Uint8Array | undefined>[] =
+    limit == 0 ?
+      // 无限制，则一口气全部加载
+      urls.map(loadOriginPic) :
+      // 有限制，则加入到队列中，慢慢加载
+      urls.map(url => limiter.execute(() => loadOriginPic(url)));
+
+  return (url) => {
+    const index = urls.indexOf(url);
+    const preLoadPromise = preLoadPromises[index];
+    return preLoadPromise != null ? preLoadPromise : loadOriginPic(url);
+  };
+};
+
 export const loadAndSaveGroup = async (urls: string[],
-                                       addLog: (log: string) => void,
-                                       loadOriginPic: (url: string) => Promise<Uint8Array | undefined>,
+                                       loadOriginPic: PicLoadFunc,
                                        options?: LoadAndSaveGroupOptions
 ) => {
   if (!urls || urls.length == 0) {
     return;
   }
+
+  const addLog = options?.addLog ?? defaultLogAddFunction;
+  const setProcess = options?.setProcess ?? defaultSetProcessFunction;
+  const all = urls.length;
+  let success = 0;
+  let failure = 0;
+  const addSuccessLog = !(options?.onlyAddFailureLogs ?? false);
 
   const taskId: number = Date.now();
   const indexToFileName: (string | undefined)[] = [];
@@ -72,53 +116,47 @@ export const loadAndSaveGroup = async (urls: string[],
   const dirPath = `${window.globalState.root_dir}\\${taskId}`;
   await mkdirs(dirPath);
 
-  const preLoadPromises: Promise<Uint8Array | undefined>[] = options?.parallel ? urls.map(loadOriginPic) : [];
-
-  const wrappedLoad = (url: string): Promise<Uint8Array | undefined> => {
-    if (options?.parallel) {
-      const index = urls.indexOf(url);
-      const preLoadPromise = preLoadPromises[index];
-      return preLoadPromise != null ? preLoadPromise : loadOriginPic(url);
-    }
-    return loadOriginPic(url)
-  };
+  const wrappedLoad = wrapperLoadFunc(urls, loadOriginPic, options);
 
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
-    addLog(`正在加载第${i + 1}张图片，url： ${url}`);
+    addSuccessLog && addLog(`正在加载第${i + 1}张图片，url： ${url}`);
     const buf: Uint8Array | undefined = await wrappedLoad(url)
       .catch(err => {
         console.error(err);
         return undefined;
       });
-    if (buf) {
-      try {
-        const compressed = await compress(buf);
-        const uuid = randomUUID();
-
-        const path = `${dirPath}\\${uuid}`;
-        await writeFileBytes(path, compressed);
-        addLog(`第${i + 1}张图片，完成原图写入`)
-
-        const smallUUID = randomUUID();
-        const compressedImage = await compressImage(buf);
-
-
-        const smallImg = await compress(compressedImage!!);
-        const smallPath = `${dirPath}\\${smallUUID}`;
-        await writeFileBytes(smallPath, smallImg);
-        addLog(`第${i + 1}张图片，加载成功`);
-        // 有失败，对应的图片应该是 undefined
-        indexToSmallFileName[i] = smallUUID;
-        indexToFileName[i] = uuid;
-      } catch (err) {
-        console.error(err);
-        addLog(`第${i + 1}张图片，失败，已跳过`);
+    try {
+      if (!buf) {
+        throw new Error('buf is null');
       }
-    } else {
+      const compressed = await compress(buf);
+      const uuid = randomUUID();
+
+      const path = `${dirPath}\\${uuid}`;
+      await writeFileBytes(path, compressed);
+      addSuccessLog && addLog(`第${i + 1}张图片，完成原图写入`);
+
+      const smallUUID = randomUUID();
+      const compressedImage = await compressImage(buf);
+
+      const smallImg = await compress(compressedImage!!);
+      const smallPath = `${dirPath}\\${smallUUID}`;
+      await writeFileBytes(smallPath, smallImg);
+
+      addSuccessLog && addLog(`第${i + 1}张图片，加载成功`);
+      success++;
+      // 有失败，对应的图片应该是 undefined
+      indexToSmallFileName[i] = smallUUID;
+      indexToFileName[i] = uuid;
+    } catch (err) {
+      console.error(err);
       addLog(`第${i + 1}张图片，失败，已跳过`);
+      failure++;
     }
+    setProcess(all, success, failure);
   }
+
 
   const path = `${dirPath}\\meta.json`;
 

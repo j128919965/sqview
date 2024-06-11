@@ -8,12 +8,18 @@ import {
 import { Button } from '@mui/joy';
 import { useState } from 'react';
 import Toast from '../components';
-import Logs from '../components/Logs';
 import { loadAndSaveGroup } from '../utils/picDownloader';
+import CustomProgressBar from '../components/CustomProgressBar';
+import Logs from '../components/Logs';
 
 export default () => {
 
   const [logs, setLogs] = useState<string[]>([]);
+  const [success, setSuccess] = useState(0);
+  const [failure, setFailure] = useState(0);
+  const [all, setAll] = useState(0)
+  const [started, setStarted] = useState(false)
+
   const startImport = async (mode: 'dir' | 'zip') => {
     if (!window.globalState.root_dir) {
       Toast.error('未选择根目录');
@@ -35,14 +41,25 @@ export default () => {
     fileNames.sort((a, b) => parseInt(a.split('.')[0]) - parseInt(b.split('.')[0]));
     const urls = fileNames.map(f => `${originPath}\\${f}`);
 
+    setAll(urls.length)
+    setStarted(true)
+    setLogs(wrapper.logs)
+    setSuccess(0)
+    setFailure(0)
+
     await loadAndSaveGroup(urls,
-      (log) => {
-        wrapper.logs = [...wrapper.logs, log];
-        setLogs(wrapper.logs);
-      },
       readFileBytes,
       {
-        parallel: true
+        parallel: true,
+        onlyAddFailureLogs: true,
+        addLog: (log) => {
+          wrapper.logs = [...wrapper.logs, log];
+          setLogs(wrapper.logs);
+        },
+        setProcess: (all, success, failure) => {
+          setSuccess(success);
+          setFailure(failure);
+        }
       }
     );
 
@@ -67,6 +84,9 @@ export default () => {
     }}>
       <Button onClick={() => startImport('zip')}>选择Zip压缩文件导入（完成后删除源文件）</Button>
     </div>
+    {
+      started ? <CustomProgressBar success={success} failure={failure} all={all} /> : <></>
+    }
     <Logs logs={logs} maxHeight='calc(100vh - 100px)' />
   </div>;
 }

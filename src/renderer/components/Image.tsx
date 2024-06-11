@@ -25,16 +25,19 @@ const Image: React.FC<ImageProps> = ({ fd, fileType, ...restProps }) => {
   }, [fd]); // 当id改变时，重新获取图片URL
 
   return <>
-    <img
-      style={{ visibility: ready ? 'visible' : 'hidden' }}
-      src={imageUrl}
-      alt='' // 你可以设置一个默认的alt文本，或者让用户传递一个
-      {...restProps} // 展开其他属性
-      onError={err => {
-        console.error(err);
-      }}
-      onLoad={() => setReady(true)}
-    />
+    {
+      imageUrl ?
+        <img
+          style={{ visibility: ready ? 'visible' : 'hidden' }}
+          src={imageUrl}
+          alt='' // 你可以设置一个默认的alt文本，或者让用户传递一个
+          {...restProps} // 展开其他属性
+          onError={err => {
+            console.error(err);
+          }}
+          onLoad={() => setReady(true)}
+        /> : <></>
+    }
     <div style={{ display: ready ? 'none' : 'block' }}><Button loading variant='plain'>
       Plain
     </Button></div>
