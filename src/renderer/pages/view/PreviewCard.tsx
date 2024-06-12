@@ -6,6 +6,7 @@ import { Delete, Person, VisibilityOff } from '@mui/icons-material';
 import { metaFirstPicPath } from '../../utils/metaUtils';
 import { MenuItemData, ProjectMeta } from '../../data';
 import MenuContainer from '../../components/MenuContainer';
+import Toast from '../../components';
 
 export default (props: {
   md: ProjectMeta,
@@ -14,7 +15,7 @@ export default (props: {
   deleteMd: (md: ProjectMeta) => void
 }) => {
 
-  const { updateMeta, selectMd } = props;
+  const { updateMeta, selectMd, deleteMd } = props;
   const [md, setMd] = useState<ProjectMeta>(props.md);
 
   const updateMd = async (refreshList: boolean) => {
@@ -43,10 +44,18 @@ export default (props: {
       }
     },
     {
-      icon: <Delete/>,
+      icon: <Delete />,
       content: '删除',
-      onClick: async ()=> {
-
+      ignore: !md.hide,
+      onClick: async () => {
+        const doDelete = await Toast.confirm('删除确认', <div style={{display: 'flex', flexDirection: 'column', alignItems:'center'}}>
+          <span>确定要删除 "{md.name}" {md.artist ? <span>(作者：{md.artist}) </span> : ''} 吗 </span>
+          <div style={{height: 20}}/>
+          <Image fd={metaFirstPicPath(md)} fileType='dataUrl' height={228} width={160} />
+        </div>)
+        if (doDelete) {
+          deleteMd(md)
+        }
       }
     }
   ];
@@ -71,5 +80,6 @@ export default (props: {
         <Image fd={metaFirstPicPath(md)} fileType='dataUrl' height={228} width={160} />
       </div>
     </Card>
+
   </MenuContainer>;
 };

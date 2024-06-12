@@ -7,7 +7,7 @@ import PreviewCard from './PreviewCard';
 import { CheckCircleOutlined, Circle, Filter, VisibilityOff } from '@mui/icons-material';
 import { defaultViewerConfig, DirShow, MenuItemData, ProjectMeta, ViewerConfig } from '../../data';
 import MenuContainer from '../../components/MenuContainer';
-import { grouping, loadAllMetas, updateSingleMeta } from '../../utils/metaUtils';
+import { deleteSingleMeta, grouping, loadAllMetas, updateSingleMeta } from '../../utils/metaUtils';
 import { getViewerConfig, updateViewerConfig } from '../../utils/fileUtils';
 
 
@@ -64,6 +64,12 @@ export const Viewer = () => {
     }
   };
 
+  const deleteMeta = async (md: ProjectMeta) => {
+    await deleteSingleMeta(md);
+    const mdId = md.createdAt;
+    setMetas(metas.filter(m => m.createdAt !== mdId));
+  };
+
   useEffect(() => {
     const rootDir = window.globalState.root_dir;
     if (!rootDir) {
@@ -88,6 +94,7 @@ export const Viewer = () => {
               md={md}
               selectMd={setSelectedMd}
               updateMeta={updateMeta}
+              deleteMd={deleteMeta}
             />)
         }
       </Stack>;
@@ -144,7 +151,7 @@ export const Viewer = () => {
   const menu: MenuItemData[] = [
     {
       icon: <VisibilityOff />,
-      content: '隐藏方式',
+      content: '筛选隐藏',
       subMenus: [
         {
           icon: viewerConfig?.hideMode === 'all' ? <CheckCircleOutlined /> : <Circle />,
@@ -153,28 +160,28 @@ export const Viewer = () => {
         },
         {
           icon: viewerConfig?.hideMode === 'hide' ? <CheckCircleOutlined /> : <Circle />,
-          content: '隐藏不可见',
+          content: '不显示隐藏',
           onClick: () => setViewerConfig({ ...viewerConfig, hideMode: 'hide' })
         },
         {
           icon: viewerConfig?.hideMode === 'onlyHide' ? <CheckCircleOutlined /> : <Circle />,
-          content: '仅显示不可见',
+          content: '仅显示隐藏',
           onClick: () => setViewerConfig({ ...viewerConfig, hideMode: 'onlyHide' })
         }
       ]
     },
     {
-      content: `筛选方式`,
+      content: `分组方式`,
       icon: <Filter />,
       subMenus: [
         {
           icon: viewerConfig?.grouping === 'none' ? <CheckCircleOutlined /> : <Circle />,
-          content: '不筛选',
+          content: '不分组',
           onClick: () => setViewerConfig({ ...viewerConfig, grouping: 'none' })
         },
         {
           icon: viewerConfig?.grouping === 'artist' ? <CheckCircleOutlined /> : <Circle />,
-          content: '按照作者筛选',
+          content: '按照作者分组',
           onClick: () => setViewerConfig({ ...viewerConfig, grouping: 'artist' })
         }
       ]

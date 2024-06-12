@@ -1,5 +1,5 @@
 import { ProjectMeta } from '../data';
-import { getMetaPaths, readFileAsString, writeFileBytes } from './fileUtils';
+import { deleteDir, getMetaPaths, readFileAsString, writeFileBytes } from './fileUtils';
 import { isValidString } from './stringUtils';
 
 export const metaFirstPicPath = (meta: ProjectMeta) => {
@@ -35,6 +35,11 @@ export const updateSingleMeta = async (md: ProjectMeta) => {
   const path = `${window.globalState.root_dir}\\${md.createdAt}\\meta.json`;
   await writeFileBytes(path, JSON.stringify(md));
 };
+
+export const deleteSingleMeta = async (md: ProjectMeta) => {
+  const path = `${window.globalState.root_dir}\\${md.createdAt}`;
+  await deleteDir(path);
+}
 
 export const grouping = <T>(arr: T[], keyFunc: (element: T) => string, valueFilter?: (obj: T)=>boolean): {key: string, data: T[]}[] => {
   const result: Record<string, T[]> = {}

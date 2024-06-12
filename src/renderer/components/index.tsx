@@ -1,5 +1,7 @@
 import ToastItem from './ToastItem';
 import ReactDOM from 'react-dom';
+import ConfirmItem from './ConfirmItem';
+import { ReactElement } from 'react';
 
 const Toast = {
   dom: null,
@@ -30,6 +32,14 @@ const Toast = {
     const JSXdom = (<ToastItem content={content} duration={duration} type='info' />);
     ReactDOM.render(JSXdom, dom);
     document.body.appendChild(dom);
+  },
+  async confirm(title: string, content: string| ReactElement): Promise<boolean> {
+    return new Promise((res)=>{
+      let dom = document.createElement('div')
+      const jsxDom = (<ConfirmItem content={content} title={title} onConfirm={res} />)
+      ReactDOM.render(jsxDom, dom)
+      document.body.appendChild(dom)
+    })
   }
 };
 

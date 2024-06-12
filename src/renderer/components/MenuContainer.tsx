@@ -25,8 +25,24 @@ const RecursiveMenu = (props: { menu: MenuItemData[], menuPosition?: MenuPositio
   }, [menuPosition]);
 
 
+  const onClose = () => {
+    setContextMenu(null);
+    if (props.onClose) {
+      props.onClose();
+    }
+  }
+
+
   function getOnClick(item: MenuItemData, index: number) {
-    return !item.subMenus ? item.onClick : (e: React.MouseEvent) => {
+    return !item.subMenus ? (e: React.MouseEvent)=> {
+      if (item.onClick) {
+        item?.onClick(e)
+        if (!item.notCloseAfterClick) {
+          onClose()
+        }
+
+      }
+    } : (e: React.MouseEvent) => {
       setSelectedIndex(index);
       if (subMenuPosition) {
         setSubMenuPosition(undefined)
@@ -53,12 +69,7 @@ const RecursiveMenu = (props: { menu: MenuItemData[], menuPosition?: MenuPositio
 
   return <Menu
     open={contextMenu != null}
-    onClose={() => {
-      setContextMenu(null);
-      if (props.onClose) {
-        props.onClose();
-      }
-    }}
+    onClose={onClose}
     anchorReference='anchorPosition'
     anchorPosition={
       contextMenu !== null

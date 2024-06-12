@@ -16,7 +16,8 @@ export interface MenuItemData {
   onClick?: (e: React.MouseEvent) => void
   content: string | ReactElement,
   subMenus?: MenuItemData[]
-  ignore?: boolean
+  ignore?: boolean,
+  notCloseAfterClick?: boolean
 }
 
 export interface MenuPosition {
