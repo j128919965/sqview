@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, Typography } from '@mui/joy';
 import EditableText from '../../components/EditableText';
 import Image from '../../components/Image';
-import { Person, VisibilityOff } from '@mui/icons-material';
+import { Delete, Person, VisibilityOff } from '@mui/icons-material';
 import { metaFirstPicPath } from '../../utils/metaUtils';
 import { MenuItemData, ProjectMeta } from '../../data';
 import MenuContainer from '../../components/MenuContainer';
@@ -10,7 +10,8 @@ import MenuContainer from '../../components/MenuContainer';
 export default (props: {
   md: ProjectMeta,
   updateMeta: (md: ProjectMeta, refreshList: boolean) => Promise<void>,
-  selectMd: (md: ProjectMeta) => void
+  selectMd: (md: ProjectMeta) => void,
+  deleteMd: (md: ProjectMeta) => void
 }) => {
 
   const { updateMeta, selectMd } = props;
@@ -39,6 +40,13 @@ export default (props: {
       onClick: async () => {
         md.hide = !md.hide;
         await updateMeta(md, true);
+      }
+    },
+    {
+      icon: <Delete/>,
+      content: '删除',
+      onClick: async ()=> {
+
       }
     }
   ];

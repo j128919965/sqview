@@ -67,7 +67,7 @@ const RecursiveMenu = (props: { menu: MenuItemData[], menuPosition?: MenuPositio
     }
   >
     {
-      menu.map((item, index) => <MenuItem
+      menu.filter(m => !m.ignore).map((item, index) => <MenuItem
         key={index}
         onClick={getOnClick(item, index)}>
         {item.icon ? <ListItemIcon>
