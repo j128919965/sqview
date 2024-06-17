@@ -150,15 +150,22 @@ function readFileBytes(filePath: string): Promise<Uint8Array> {
   });
 }
 
-function readFileAsString(filePath: string, encoding: BufferEncoding): Promise<string> {
+function readFileAsString(filePath: string, encoding: BufferEncoding): Promise<string | undefined> {
   return new Promise((resolve, reject) => {
-    fs.readFile(filePath, encoding, (err, data) => {
-      if (err) {
-        reject(err);
-        return;
+    fs.exists(filePath, (exists) => {
+      if (!exists) {
+        resolve(undefined)
+        return
       }
-      resolve(data);
+      fs.readFile(filePath, encoding, (err, data) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve(data);
+      });
     });
+
   });
 }
 

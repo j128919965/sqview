@@ -1,9 +1,10 @@
-import { mkdirs, writeFileBytes } from './fileUtils';
+import { mkdirs, readFileAsString, writeFileBytes } from './fileUtils';
 import { compress, randomUUID } from './zstdUtils';
 import { compressImage } from './imgUtils';
-import { ProjectMeta } from '../data';
+import { ProjectIndexData, ProjectMeta } from '../data';
 import Toast from '../components';
 import ConcurrencyLimiter from './ConcurrencyLimiter';
+import { generateIndex } from './metaUtils';
 
 
 export class SqPicUrlHelper {
@@ -159,6 +160,7 @@ export const loadAndSaveGroup = async (urls: string[],
 
 
   const path = `${dirPath}\\meta.json`;
+  const indexPath = `${window.globalState.root_dir}\\index.json`
 
   const meta: ProjectMeta = {
     indexToFileName,
@@ -168,6 +170,13 @@ export const loadAndSaveGroup = async (urls: string[],
     lastOpen: taskId
   };
   await writeFileBytes(path, JSON.stringify(meta));
+  // 下载完成后，维护一下 index
+  const indexStr = await readFileAsString(indexPath, 'utf-8');
+  if (indexStr) {
+    let index : ProjectIndexData[] = JSON.parse(indexStr)
+    index = [generateIndex([meta])[0], ...index]
+    await writeFileBytes(indexPath, JSON.stringify(index))
+  }
   addLog(`全部文件加载成功`);
   Toast.success('加载成功');
 };

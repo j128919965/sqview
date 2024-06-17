@@ -5,9 +5,16 @@ import { Button, Chip, Divider, Stack } from '@mui/joy';
 import DetailView from './DetailView';
 import PreviewCard from './PreviewCard';
 import { CheckCircleOutlined, Circle, Filter, VisibilityOff } from '@mui/icons-material';
-import { defaultViewerConfig, DirShow, MenuItemData, ProjectMeta, ViewerConfig } from '../../data';
+import { defaultViewerConfig, DirShow, MenuItemData, ProjectIndexData, ProjectMeta, ViewerConfig } from '../../data';
 import MenuContainer from '../../components/MenuContainer';
-import { deleteSingleMeta, grouping, loadAllMetas, updateSingleMeta } from '../../utils/metaUtils';
+import {
+  deleteSingleMeta,
+  generateIndex,
+  grouping,
+  loadAllMetas,
+  loadIndex, saveIndex,
+  updateSingleMeta
+} from '../../utils/metaUtils';
 import { getViewerConfig, updateViewerConfig } from '../../utils/fileUtils';
 
 
@@ -18,6 +25,23 @@ export const Viewer = () => {
   const viewerRef = useRef<any>(null);
   const [viewerConfig, _setViewerConfig] = useState<ViewerConfig>(defaultViewerConfig());
   const [loading, setLoading] = useState<boolean>(false);
+  const [index, setIndex] = useState<ProjectIndexData[]>([])
+
+  const findMeta = (mdId: number) : ProjectMeta | undefined => {
+    for (let meta of metas) {
+      if (meta.createdAt === mdId) {
+        return meta
+      }
+    }
+    return undefined
+  }
+
+  const selectMd = (idxData: ProjectIndexData) => {
+    const meta = findMeta(idxData.createdAt);
+    if (meta) {
+      setSelectedMd(meta)
+    }
+  }
 
   const loadPreviewList = async () => {
     if (!window.globalState.root_dir) {
@@ -27,8 +51,20 @@ export const Viewer = () => {
 
     try {
       setLoading(true);
-      const metas = await loadAllMetas();
-      setMetas(metas);
+      const preLoadIndex = await loadIndex();
+      if (preLoadIndex) {
+        setIndex(preLoadIndex)
+        setLoading(false)
+        loadAllMetas().then(mds => setMetas(mds))
+      } else {
+        const metas = await loadAllMetas();
+        setMetas(metas);
+        const generatedIndex = generateIndex(metas)
+        setIndex(generatedIndex)
+        setLoading(false)
+        saveIndex(generatedIndex)
+      }
+
     } catch (e: any) {
       console.error(e);
       Toast.error('加载失败 , ' + e.message);
@@ -56,18 +92,37 @@ export const Viewer = () => {
     await updateViewerConfig(window.globalState.root_dir, _vc);
   };
 
-  const updateMeta = async (md: ProjectMeta, refreshList: boolean) => {
-    await updateSingleMeta(md);
+  const updateMeta = async (idxData: ProjectIndexData, refreshList: boolean) => {
+    const meta = findMeta(idxData.createdAt);
+    if (!meta) {
+      return
+    }
+    meta.hide = idxData.hide;
+    meta.artist = idxData.artist;
+    meta.tags = idxData.tags;
+    meta.lastOpen = idxData.lastOpen;
+    meta.name = idxData.name;
+    await updateSingleMeta(meta);
     metas.sort((a: ProjectMeta, b: ProjectMeta) => b.lastOpen - a.lastOpen);
+
+    const newMetas = [...metas];
+    const newIndex = generateIndex(newMetas);
+    saveIndex(newIndex)
+
     if (refreshList) {
-      setMetas([...metas]);
+      setMetas(newMetas);
+      setIndex(newIndex)
     }
   };
 
-  const deleteMeta = async (md: ProjectMeta) => {
-    await deleteSingleMeta(md);
+  const deleteMeta = async (md: ProjectIndexData) => {
     const mdId = md.createdAt;
-    setMetas(metas.filter(m => m.createdAt !== mdId));
+    await deleteSingleMeta(mdId);
+    const newMetas = metas.filter(m => m.createdAt !== mdId);
+    setMetas(newMetas);
+    const newIndex = generateIndex(newMetas)
+    setIndex(newIndex)
+    saveIndex(newIndex)
   };
 
   useEffect(() => {
@@ -84,7 +139,7 @@ export const Viewer = () => {
   }, []);
 
   function showPreviewList() {
-    const list = (metaList: ProjectMeta[]) => {
+    const list = (metaList: ProjectIndexData[]) => {
       return <Stack
         ref={viewerRef} spacing={2} direction='row' justifyContent='center' flexWrap='wrap' useFlexGap>
         {
@@ -92,7 +147,7 @@ export const Viewer = () => {
             metaList.map(md => <PreviewCard
               key={md.createdAt}
               md={md}
-              selectMd={setSelectedMd}
+              selectMd={selectMd}
               updateMeta={updateMeta}
               deleteMd={deleteMeta}
             />)
@@ -100,7 +155,7 @@ export const Viewer = () => {
       </Stack>;
     };
 
-    const filterMetaByHide = (md: ProjectMeta): boolean => {
+    const filterMetaByHide = (md: ProjectIndexData): boolean => {
       if (!viewerConfig) {
         return true;
       }
@@ -119,12 +174,12 @@ export const Viewer = () => {
 
     return <MenuContainer style={{ height: '100vh', overflowY: 'auto' }} menu={menu}>
       {viewerConfig.grouping === 'none'
-        ? list(metas)
+        ? list(index)
         : <>{
-          grouping(metas, (md) => md.artist ?? '未填写作者', filterMetaByHide)
+          grouping(index, (md) => md.artist ?? '未填写作者', filterMetaByHide)
             .map(d => {
               return <>
-                <Divider sx={{ margin: '10px 0' }}>
+                <Divider sx={{ margin: '10px 0' }} key={d.key}>
                   <Chip variant='soft' color='neutral' size='lg'>
                     {d.key}
                   </Chip>

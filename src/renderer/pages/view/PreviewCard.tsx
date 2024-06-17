@@ -4,19 +4,19 @@ import EditableText from '../../components/EditableText';
 import Image from '../../components/Image';
 import { Delete, Person, VisibilityOff } from '@mui/icons-material';
 import { metaFirstPicPath } from '../../utils/metaUtils';
-import { MenuItemData, ProjectMeta } from '../../data';
+import { MenuItemData, ProjectIndexData, ProjectMeta } from '../../data';
 import MenuContainer from '../../components/MenuContainer';
 import Toast from '../../components';
 
 export default (props: {
-  md: ProjectMeta,
-  updateMeta: (md: ProjectMeta, refreshList: boolean) => Promise<void>,
-  selectMd: (md: ProjectMeta) => void,
-  deleteMd: (md: ProjectMeta) => void
+  md: ProjectIndexData,
+  updateMeta: (md: ProjectIndexData, refreshList: boolean) => Promise<void>,
+  selectMd: (md: ProjectIndexData) => void,
+  deleteMd: (md: ProjectIndexData) => void
 }) => {
 
   const { updateMeta, selectMd, deleteMd } = props;
-  const [md, setMd] = useState<ProjectMeta>(props.md);
+  const [md, setMd] = useState<ProjectIndexData>(props.md);
 
   const updateMd = async (refreshList: boolean) => {
     await updateMeta(md, refreshList);
@@ -51,7 +51,7 @@ export default (props: {
         const doDelete = await Toast.confirm('删除确认', <div style={{display: 'flex', flexDirection: 'column', alignItems:'center'}}>
           <span>确定要删除 "{md.name}" {md.artist ? <span>(作者：{md.artist}) </span> : ''} 吗 </span>
           <div style={{height: 20}}/>
-          <Image fd={metaFirstPicPath(md)} fileType='dataUrl' height={228} width={160} />
+          <Image fd={md.previewImage} fileType='dataUrl' height={228} width={160} />
         </div>)
         if (doDelete) {
           deleteMd(md)
@@ -74,10 +74,10 @@ export default (props: {
            onClick={async () => {
              selectMd(md);
              md.lastOpen = Date.now();
-             await updateMeta(md, false);
+             await updateMeta(md, true);
            }}
       >
-        <Image fd={metaFirstPicPath(md)} fileType='dataUrl' height={228} width={160} />
+        <Image fd={md.previewImage} fileType='dataUrl' height={228} width={160} />
       </div>
     </Card>
 

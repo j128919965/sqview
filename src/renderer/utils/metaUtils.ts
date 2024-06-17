@@ -1,4 +1,4 @@
-import { ProjectMeta } from '../data';
+import { ProjectIndexData, ProjectMeta } from '../data';
 import { deleteDir, getMetaPaths, readFileAsString, writeFileBytes } from './fileUtils';
 import { isValidString } from './stringUtils';
 
@@ -31,13 +31,47 @@ export const loadAllMetas = async (): Promise<ProjectMeta[]> => {
   return metas;
 };
 
+export const loadIndex = async (): Promise<ProjectIndexData[] | undefined> => {
+  const rootDir = window.globalState.root_dir;
+  if (!rootDir) {
+    throw new Error('root dir not choosed');
+  }
+  const str = await readFileAsString(`${rootDir}\\index.json`, 'utf-8')
+  if (str) {
+    return JSON.parse(str)
+  }
+  return undefined;
+}
+
+export const generateIndex = (mdList: ProjectMeta[]) : ProjectIndexData[] => {
+  return mdList.map(md => {
+    return {
+      createdAt: md.createdAt,
+      previewImage: metaFirstPicPath(md),
+      name: md.name,
+      lastOpen: md.lastOpen,
+      artist: md.artist,
+      tags: md.tags,
+      hide: md.hide
+    }
+  })
+}
+
+export const saveIndex = async (index: ProjectIndexData[]) => {
+  const rootDir = window.globalState.root_dir;
+  if (!rootDir) {
+    throw new Error('root dir not choosed');
+  }
+  await writeFileBytes(`${rootDir}\\index.json`, JSON.stringify(index));
+};
+
 export const updateSingleMeta = async (md: ProjectMeta) => {
   const path = `${window.globalState.root_dir}\\${md.createdAt}\\meta.json`;
   await writeFileBytes(path, JSON.stringify(md));
 };
 
-export const deleteSingleMeta = async (md: ProjectMeta) => {
-  const path = `${window.globalState.root_dir}\\${md.createdAt}`;
+export const deleteSingleMeta = async (mdId: number) => {
+  const path = `${window.globalState.root_dir}\\${mdId}`;
   await deleteDir(path);
 }
 

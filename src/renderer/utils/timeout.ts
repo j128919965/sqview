@@ -9,7 +9,8 @@ export const retryAble = <T>(times: number, action: () => Promise<T>): Promise<T
   return new Promise(async (res, rej) => {
     for (let i = 0; i < times; i++) {
       try {
-        res(action());
+        res(await action());
+        return
       } catch (e) {
         if (i == times - 1) {
           rej(e);
