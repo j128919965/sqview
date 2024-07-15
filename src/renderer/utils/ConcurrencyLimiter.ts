@@ -4,10 +4,10 @@ export default class ConcurrencyLimiter {
   private readonly queue = new Array<() => Promise<void>>();
 
   constructor(maxConcurrent: number) {
-    if (maxConcurrent <= 0) {
+    if (maxConcurrent < 0) {
       throw new Error('maxConcurrent must be a positive integer');
     }
-    this.maxConcurrent = maxConcurrent;
+    this.maxConcurrent = Math.max(maxConcurrent, 1);
   }
 
   // 尝试执行任务，如果当前并发量未达到上限，则立即执行；否则加入队列等待
