@@ -26,19 +26,37 @@ export default () => {
       return;
     }
 
-    let originPath = mode == 'dir' ? await chooseDirectory() :
-      await chooseZipAndReturnDirectory(window.globalState.root_dir);
-    if (!originPath) {
-      Toast.error('已取消');
-      return;
+    let originPath;
+    let groupName;
+
+    if(mode === 'dir') {
+      originPath = await chooseDirectory()
+
+      if (!originPath) {
+        Toast.error('已取消');
+        return;
+      }
+
+      groupName = originPath.split('\\').pop() ?? undefined;
+    } else {
+      let openResult = await chooseZipAndReturnDirectory(window.globalState.root_dir)
+
+      if (!openResult) {
+        Toast.error('已取消');
+        return;
+      }
+
+      originPath = openResult.tempPath;
+      groupName = openResult.originZipFile.split('\\').pop()?.split('.')[0] ?? undefined;
     }
 
+    console.log("groupName",groupName)
 
     const wrapper: { logs: string[] } = { logs: [] };
 
 
     const fileNames = await getSubFiles(originPath);
-    fileNames.sort((a, b) => parseInt(a.split('.')[0]) - parseInt(b.split('.')[0]));
+    fileNames.sort((a, b) => parseInt(a.split('.')[0], 10) - parseInt(b.split('.')[0], 10));
     const urls = fileNames.map(f => `${originPath}\\${f}`);
 
     setAll(urls.length)
@@ -59,7 +77,8 @@ export default () => {
         setProcess: (all, success, failure) => {
           setSuccess(success);
           setFailure(failure);
-        }
+        },
+        groupName
       }
     );
 

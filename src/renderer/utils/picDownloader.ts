@@ -60,7 +60,8 @@ export type LoadAndSaveGroupOptions = {
   addLog?: (log: string) => void,
   setProcess?: (all: number, success: number, failure: number) => void,
   onlyAddFailureLogs?: boolean,
-  parallelLimit?: number
+  parallelLimit?: number,
+  groupName?: string,
 }
 
 export type PicLoadFunc = (url: string) => Promise<Uint8Array | undefined>
@@ -166,7 +167,7 @@ export const loadAndSaveGroup = async (urls: string[],
     indexToFileName,
     indexToSmallFileName,
     createdAt: taskId,
-    name: taskId.toString(),
+    name: options?.groupName ?? taskId.toString(),
     lastOpen: taskId
   };
   await writeFileBytes(path, JSON.stringify(meta));

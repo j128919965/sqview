@@ -1,6 +1,6 @@
 // 在渲染进程中调用 IPC 方法
 import { timeout } from './timeout';
-import { ViewerConfig } from '../data';
+import { OpenZipResult, ViewerConfig } from '../data';
 
 export function getSubFiles(
   directory: string
@@ -53,7 +53,7 @@ export function chooseDirectory(): Promise<string | undefined> {
   return window.electron.ipcRenderer.invoke('chooseDirectory');
 }
 
-export function chooseZipAndReturnDirectory(rootDir: string): Promise<string | undefined> {
+export function chooseZipAndReturnDirectory(rootDir: string): Promise<OpenZipResult | undefined> {
   return window.electron.ipcRenderer.invoke('chooseZipAndReturnDirectory', rootDir)
 }
 

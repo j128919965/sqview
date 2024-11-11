@@ -70,3 +70,8 @@ export const isDirShow = (str: string | null): str is DirShow => {
 export type FileType = 'blob' | 'dataUrl'
 
 export type GlobalState = 'root_dir'
+
+export interface OpenZipResult {
+  originZipFile: string
+  tempPath: string
+}

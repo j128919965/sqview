@@ -1,7 +1,7 @@
 import { dialog, ipcMain } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
-import { defaultViewerConfig, normalizeViewerConfig, ViewerConfig } from '../renderer/data';
+import { defaultViewerConfig, normalizeViewerConfig, OpenZipResult, ViewerConfig } from '../renderer/data';
 const AdmZip = require("adm-zip");
 //
 // const fs = require('node:fs')
@@ -232,8 +232,8 @@ function deleteDir(path: string): Promise<void> {
 }
 
 
-function chooseZipAndReturnDirectory(rootDir: string): Promise<string | undefined> {
-  return new Promise<string | undefined>(res => {
+function chooseZipAndReturnDirectory(rootDir: string): Promise<OpenZipResult | undefined> {
+  return new Promise<OpenZipResult | undefined>(res => {
     dialog.showOpenDialog({
       properties: ['openFile'],
       filters: [{
@@ -245,7 +245,7 @@ function chooseZipAndReturnDirectory(rootDir: string): Promise<string | undefine
         const filePath = result.filePaths[0];
         const temp = await unzipFileToTempDir(rootDir,filePath);
         console.log(temp);
-        res(temp);
+        res({tempPath: temp, originZipFile: filePath});
       } else {
         res(undefined);
       }
