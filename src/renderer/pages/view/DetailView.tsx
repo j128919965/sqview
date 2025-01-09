@@ -7,7 +7,7 @@ import { isValidString } from '../../utils/stringUtils';
 
 const idToPath = (meta: ProjectMeta,id: string|undefined) => {
   if (isValidString(id)) {
-    return `${window.globalState.root_dir}\\${meta.createdAt}\\${id}`;
+    return `${window.globalState.root_dir}${window.globalState.path_sep}${meta.createdAt}${window.globalState.path_sep}${id}`;
   } else {
     return undefined;
   }

@@ -1,11 +1,13 @@
 import { ProjectIndexData, ProjectMeta } from '../data';
-import { deleteDir, getMetaPaths, readFileAsString, writeFileBytes } from './fileUtils';
+import { deleteDir, getMetaPaths, getPathSep, readFileAsString, writeFileBytes } from './fileUtils';
 import { isValidString } from './stringUtils';
 
+
 export const metaFirstPicPath = (meta: ProjectMeta) => {
+  const sep = window.globalState.path_sep
   for (let smallPic of meta.indexToSmallFileName) {
     if (isValidString(smallPic)) {
-      return `${window.globalState.root_dir}\\${meta.createdAt}\\${smallPic}`;
+      return `${window.globalState.root_dir}${sep}${meta.createdAt}${sep}${smallPic}`;
     }
   }
   return undefined;
@@ -32,11 +34,12 @@ export const loadAllMetas = async (): Promise<ProjectMeta[]> => {
 };
 
 export const loadIndex = async (): Promise<ProjectIndexData[] | undefined> => {
+  const sep = window.globalState.path_sep
   const rootDir = window.globalState.root_dir;
   if (!rootDir) {
     throw new Error('root dir not choosed');
   }
-  const str = await readFileAsString(`${rootDir}\\index.json`, 'utf-8')
+  const str = await readFileAsString(`${rootDir}${sep}index.json`, 'utf-8')
   if (str) {
     return JSON.parse(str)
   }
@@ -58,20 +61,23 @@ export const generateIndex = (mdList: ProjectMeta[]) : ProjectIndexData[] => {
 }
 
 export const saveIndex = async (index: ProjectIndexData[]) => {
+  const sep = window.globalState.path_sep
   const rootDir = window.globalState.root_dir;
   if (!rootDir) {
     throw new Error('root dir not choosed');
   }
-  await writeFileBytes(`${rootDir}\\index.json`, JSON.stringify(index));
+  await writeFileBytes(`${rootDir}${sep}index.json`, JSON.stringify(index));
 };
 
 export const updateSingleMeta = async (md: ProjectMeta) => {
-  const path = `${window.globalState.root_dir}\\${md.createdAt}\\meta.json`;
+  const sep = window.globalState.path_sep
+  const path = `${window.globalState.root_dir}${sep}${md.createdAt}${sep}meta.json`;
   await writeFileBytes(path, JSON.stringify(md));
 };
 
 export const deleteSingleMeta = async (mdId: number) => {
-  const path = `${window.globalState.root_dir}\\${mdId}`;
+  const sep = window.globalState.path_sep
+  const path = `${window.globalState.root_dir}${sep}${mdId}`;
   await deleteDir(path);
 }
 

@@ -203,7 +203,7 @@ function chooseDirectory(): Promise<string | undefined> {
 async function unzipFileToTempDir(rootDir: string, zipFilePath: string): Promise<string> {
   // 创建一个临时目录
 
-  const tempDirPath= rootDir + '\\temp'+ new Date().getTime();
+  const tempDirPath= rootDir +path.sep +'temp'+ new Date().getTime();
 
   fs.mkdirSync(tempDirPath);
 
@@ -330,5 +330,11 @@ export function registerMainProcessListeners() {
 
   ipcMain.handle('deleteDir', (_, path) => {
     return deleteDir(path);
+  });
+  ipcMain.handle('joinPath', (_, paths) => {
+    return path.join(paths);
+  });
+  ipcMain.handle('getPathSep', (_, paths) => {
+    return path.sep
   });
 }

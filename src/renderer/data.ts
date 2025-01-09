@@ -1,4 +1,5 @@
 import React, { ReactElement } from 'react';
+import { getPathSep } from './utils/fileUtils';
 
 export interface ProjectMeta {
   indexToFileName: (string | undefined)[],
@@ -69,7 +70,7 @@ export const isDirShow = (str: string | null): str is DirShow => {
 
 export type FileType = 'blob' | 'dataUrl'
 
-export type GlobalState = 'root_dir'
+export type GlobalState = 'root_dir' | 'path_sep'
 
 export interface OpenZipResult {
   originZipFile: string

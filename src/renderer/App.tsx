@@ -13,6 +13,9 @@ export default function App() {
     window.electron.ipcRenderer.on('open_root_dir', (args: string[]) => {
       window.globalState['root_dir'] = args[0];
     });
+    window.electron.ipcRenderer.on('path_sep', (args: string[]) => {
+      window.globalState['path_sep'] = args[0];
+    });
   }, []);
 
 

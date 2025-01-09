@@ -1,4 +1,4 @@
-import { mkdirs, readFileAsString, writeFileBytes } from './fileUtils';
+import { getPathSep, mkdirs, readFileAsString, writeFileBytes } from './fileUtils';
 import { compress, randomUUID } from './zstdUtils';
 import { compressImage } from './imgUtils';
 import { ProjectIndexData, ProjectMeta } from '../data';
@@ -105,6 +105,7 @@ export const loadAndSaveGroup = async (urls: string[],
     return;
   }
 
+  const sep = window.globalState.path_sep
   const addLog = options?.addLog ?? defaultLogAddFunction;
   const setProcess = options?.setProcess ?? defaultSetProcessFunction;
   const all = urls.length;
@@ -115,7 +116,7 @@ export const loadAndSaveGroup = async (urls: string[],
   const taskId: number = Date.now();
   const indexToFileName: (string | undefined)[] = [];
   const indexToSmallFileName: (string | undefined)[] = [];
-  const dirPath = `${window.globalState.root_dir}\\${taskId}`;
+  const dirPath = `${window.globalState.root_dir}${sep}${taskId}`;
   await mkdirs(dirPath);
 
   const wrappedLoad = wrapperLoadFunc(urls, loadOriginPic, options);
@@ -135,7 +136,7 @@ export const loadAndSaveGroup = async (urls: string[],
       const compressed = await compress(buf);
       const uuid = randomUUID();
 
-      const path = `${dirPath}\\${uuid}`;
+      const path = `${dirPath}${sep}${uuid}`;
       await writeFileBytes(path, compressed);
       addSuccessLog && addLog(`第${i + 1}张图片，完成原图写入`);
 
@@ -143,7 +144,7 @@ export const loadAndSaveGroup = async (urls: string[],
       const compressedImage = await compressImage(buf);
 
       const smallImg = await compress(compressedImage!!);
-      const smallPath = `${dirPath}\\${smallUUID}`;
+      const smallPath = `${dirPath}${sep}${smallUUID}`;
       await writeFileBytes(smallPath, smallImg);
 
       addSuccessLog && addLog(`第${i + 1}张图片，加载成功`);
@@ -160,8 +161,8 @@ export const loadAndSaveGroup = async (urls: string[],
   }
 
 
-  const path = `${dirPath}\\meta.json`;
-  const indexPath = `${window.globalState.root_dir}\\index.json`
+  const path = `${dirPath}${sep}meta.json`;
+  const indexPath = `${window.globalState.root_dir}${sep}index.json`
 
   const meta: ProjectMeta = {
     indexToFileName,

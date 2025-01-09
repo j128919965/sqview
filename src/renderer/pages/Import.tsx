@@ -2,7 +2,9 @@ import {
   chooseDirectory,
   chooseZipAndReturnDirectory,
   deleteDir,
+  getPathSep,
   getSubFiles,
+  joinPath,
   readFileBytes
 } from '../utils/fileUtils';
 import { Button } from '@mui/joy';
@@ -28,6 +30,8 @@ export default () => {
 
     let originPath;
     let groupName;
+    let sep = window.globalState.path_sep
+
 
     if(mode === 'dir') {
       originPath = await chooseDirectory()
@@ -37,7 +41,7 @@ export default () => {
         return;
       }
 
-      groupName = originPath.split('\\').pop() ?? undefined;
+      groupName = originPath.split(sep).pop() ?? undefined;
     } else {
       let openResult = await chooseZipAndReturnDirectory(window.globalState.root_dir)
 
@@ -47,7 +51,7 @@ export default () => {
       }
 
       originPath = openResult.tempPath;
-      groupName = openResult.originZipFile.split('\\').pop()?.split('.')[0] ?? undefined;
+      groupName = openResult.originZipFile.split(sep).pop()?.split('.')[0] ?? undefined;
     }
 
     console.log("groupName",groupName)
@@ -57,7 +61,9 @@ export default () => {
 
     const fileNames = await getSubFiles(originPath);
     fileNames.sort((a, b) => parseInt(a.split('.')[0], 10) - parseInt(b.split('.')[0], 10));
-    const urls = fileNames.map(f => `${originPath}\\${f}`);
+
+
+    const urls = fileNames.map(f => originPath + sep + f);
 
     setAll(urls.length)
     setStarted(true)
