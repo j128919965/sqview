@@ -1,11 +1,16 @@
-import { BrowserWindow, dialog, Menu } from 'electron';
+import { App, BrowserWindow, dialog, Menu } from 'electron';
 import test from './vedio';
+const process = require('node:process')
+
+const isMac = process.platform === 'darwin'
 
 export default class MenuBuilder {
   mainWindow: BrowserWindow;
+  app: App;
 
-  constructor(mainWindow: BrowserWindow) {
+  constructor(mainWindow: BrowserWindow, app: App) {
     this.mainWindow = mainWindow;
+    this.app = app;
   }
 
   buildMenu(): Menu {
@@ -40,13 +45,20 @@ export default class MenuBuilder {
   }
 
   buildDefaultTemplate(mainWindow: BrowserWindow) {
+    const forMac = isMac ? [{
+      label: 'SqView',
+      submenu: [
+        { label: '关于' }
+      ]
+    }] : []
     return [
+      ...forMac,
       {
         label: '文件',
         submenu: [
           {
             label: '选择根目录',
-            accelerator: 'Ctrl+O',
+            accelerator: isMac ? 'Cmd+O' : 'Ctrl+O',
             click() {
               dialog.showOpenDialog({
                 properties: ['openDirectory']
@@ -59,10 +71,17 @@ export default class MenuBuilder {
             }
           },
           {
-            label: '&Close',
-            accelerator: 'Ctrl+W',
+            label: '关闭窗口',
+            accelerator: isMac ? 'Cmd+W' : 'Ctrl+W',
             click: () => {
               this.mainWindow.close();
+            }
+          },
+          {
+            label: '退出应用',
+            accelerator: isMac ? 'Cmd+Q' : 'Ctrl+Q',
+            click: () => {
+              this.app.quit()
             }
           }
         ]

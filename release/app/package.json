@@ -1,12 +1,12 @@
 {
-  "name": "electron-react-boilerplate",
-  "version": "4.6.0",
-  "description": "A foundation for scalable desktop apps",
+  "name": "sqview",
+  "version": "0.1.0",
+  "description": "一款基于electron的图集加密、查看工具",
   "license": "MIT",
   "author": {
-    "name": "Electron React Boilerplate Maintainers",
-    "email": "electronreactboilerplate@gmail.com",
-    "url": "https://github.com/electron-react-boilerplate"
+    "name": "YuanQue",
+    "email": "853681401@qq.com",
+    "url": "https://github.com/j128919965/sqview"
   },
   "main": "./dist/main/main.js",
   "scripts": {
