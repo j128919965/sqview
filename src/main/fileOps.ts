@@ -305,7 +305,7 @@ export function registerMainProcessListeners() {
   });
 
   ipcMain.handle('readFileAsString', (_, path, encoding) => {
-    return readFileAsString(path, encoding);
+    return readFileAsString(path, encoding); 
   });
 
   ipcMain.handle('decompressToString', (_, data) => {
@@ -331,10 +331,5 @@ export function registerMainProcessListeners() {
   ipcMain.handle('deleteDir', (_, path) => {
     return deleteDir(path);
   });
-  ipcMain.handle('joinPath', (_, paths) => {
-    return path.join(paths);
-  });
-  ipcMain.handle('getPathSep', (_, paths) => {
-    return path.sep
-  });
+
 }

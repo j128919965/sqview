@@ -60,11 +60,3 @@ export function chooseZipAndReturnDirectory(rootDir: string): Promise<OpenZipRes
 export function deleteDir(path: string) : Promise<void> {
   return timeout(2000, ()=>window.electron.ipcRenderer.invoke('deleteDir', path))
 }
-
-export function joinPath(...paths: string[]): Promise<string> {
-  return window.electron.ipcRenderer.invoke("joinPath", paths)
-}
-
-export function getPathSep(): Promise<string> {
-  return window.electron.ipcRenderer.invoke("getPathSep")
-}

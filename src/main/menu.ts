@@ -1,4 +1,4 @@
-import { App, BrowserWindow, dialog, Menu } from 'electron';
+import { App, BrowserWindow, dialog, Menu, MenuItemConstructorOptions } from 'electron';
 import test from './vedio';
 const process = require('node:process')
 
@@ -44,7 +44,7 @@ export default class MenuBuilder {
     });
   }
 
-  buildDefaultTemplate(mainWindow: BrowserWindow) {
+  buildDefaultTemplate(mainWindow: BrowserWindow) : MenuItemConstructorOptions[]{
     const forMac = isMac ? [{
       label: 'SqView',
       submenu: [
@@ -84,6 +84,17 @@ export default class MenuBuilder {
               this.app.quit()
             }
           }
+        ]
+      },
+      {
+        label: '编辑',
+        submenu: [
+          { label: '撤销', accelerator: 'CmdOrCtrl+Z', role: 'undo' },
+          { label: '重做', accelerator: 'Shift+CmdOrCtrl+Z', role: 'redo' },
+          { label: '剪切', accelerator: 'CmdOrCtrl+X', role: 'cut' },
+          { label: '复制', accelerator: 'CmdOrCtrl+C', role: 'copy' },
+          { label: '粘贴', accelerator: 'CmdOrCtrl+V', role: 'paste' },
+          { label: '全选', accelerator: 'CmdOrCtrl+A', role: 'selectAll' },
         ]
       },
       {

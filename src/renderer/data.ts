@@ -1,5 +1,4 @@
 import React, { ReactElement } from 'react';
-import { getPathSep } from './utils/fileUtils';
 
 export interface ProjectMeta {
   indexToFileName: (string | undefined)[],

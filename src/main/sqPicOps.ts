@@ -12,21 +12,40 @@ const getDomain = (url: string): string => {
 };
 
 export class SqPicGetter {
-  public async sendRequest(url: string): Promise<Uint8Array | undefined> {
+  private readonly MAX_RETRIES = 3;
+
+  public async sendRequest(url: string, retryCount = 0, excludeSuffix: string[] = []): Promise<Uint8Array | undefined> {
     try {
       const { code, data } = await this.doSendRequest(url);
       if (code === 200) {
         return data;
       }
+      
+      // 处理404情况，尝试不同的图片格式
       if (code === 404) {
         const suffix = SqPicUrlHelper.suffix(url);
-        const toggleSuffix = SqPicUrlHelper.toggleSuffix(suffix);
-        const newUrl = url.replace(new RegExp(suffix + '$'), toggleSuffix);
-        return this.doSendRequest(newUrl).then(({ data }) => {
-          return data;
-        });
+        const formats = ['jpg', 'png', 'webp'];
+        const retryExcludeSuffix = [...excludeSuffix, suffix];
+        
+        for (let i = 0; i < formats.length; i++) {
+          if (retryExcludeSuffix.includes(formats[i])) {
+            const newUrl = url.replace(new RegExp(suffix + '$'), formats[i]);
+            const result = await this.sendRequest(newUrl, 0, retryExcludeSuffix);
+            if (result) return result;
+          }
+        }
+      }
+
+      // 处理网络错误的重试逻辑
+      if ((code >= 500 || code === 0) && retryCount < this.MAX_RETRIES) {
+        console.log(`Request failed with code ${code}, retrying... (${retryCount + 1}/${this.MAX_RETRIES})`);
+        return this.sendRequest(url, retryCount + 1, excludeSuffix);
       }
     } catch (e) {
+      if (retryCount < this.MAX_RETRIES) {
+        console.log(`Request error, retrying... (${retryCount + 1}/${this.MAX_RETRIES})`);
+        return this.sendRequest(url, retryCount + 1, excludeSuffix);
+      }
       console.error(e);
     }
     return undefined;

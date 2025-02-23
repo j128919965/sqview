@@ -2,9 +2,7 @@ import {
   chooseDirectory,
   chooseZipAndReturnDirectory,
   deleteDir,
-  getPathSep,
   getSubFiles,
-  joinPath,
   readFileBytes
 } from '../utils/fileUtils';
 import { Button } from '@mui/joy';

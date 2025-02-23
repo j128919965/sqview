@@ -1,5 +1,5 @@
 import { ProjectIndexData, ProjectMeta } from '../data';
-import { deleteDir, getMetaPaths, getPathSep, readFileAsString, writeFileBytes } from './fileUtils';
+import { deleteDir, getMetaPaths, readFileAsString, writeFileBytes } from './fileUtils';
 import { isValidString } from './stringUtils';
 
 

@@ -1,4 +1,4 @@
-import { getPathSep, mkdirs, readFileAsString, writeFileBytes } from './fileUtils';
+import { mkdirs, readFileAsString, writeFileBytes } from './fileUtils';
 import { compress, randomUUID } from './zstdUtils';
 import { compressImage } from './imgUtils';
 import { ProjectIndexData, ProjectMeta } from '../data';
