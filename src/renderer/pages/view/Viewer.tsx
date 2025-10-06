@@ -7,6 +7,7 @@ import PreviewCard from './PreviewCard';
 import { CheckCircleOutlined, Circle, Filter, VisibilityOff } from '@mui/icons-material';
 import { defaultViewerConfig, DirShow, MenuItemData, ProjectIndexData, ProjectMeta, ViewerConfig } from '../../data';
 import MenuContainer from '../../components/MenuContainer';
+import TagFilter from '../../components/TagFilter';
 import {
   deleteSingleMeta,
   generateIndex,
@@ -25,7 +26,8 @@ export const Viewer = () => {
   const viewerRef = useRef<any>(null);
   const [viewerConfig, _setViewerConfig] = useState<ViewerConfig>(defaultViewerConfig());
   const [loading, setLoading] = useState<boolean>(false);
-  const [index, setIndex] = useState<ProjectIndexData[]>([])
+  const [index, setIndex] = useState<ProjectIndexData[]>([]);
+  const [selectedTagsFilter, setSelectedTagsFilter] = useState<string[]>([]);
 
   const findMeta = (mdId: number) : ProjectMeta | undefined => {
     for (let meta of metas) {
@@ -80,6 +82,52 @@ export const Viewer = () => {
     const vc = await getViewerConfig(rootDir);
     console.log(vc);
     _setViewerConfig(vc);
+  };
+
+  // 根据标签分组
+  const groupByTags = (arr: ProjectIndexData[], valueFilter?: (obj: ProjectIndexData) => boolean): {key: string, data: ProjectIndexData[]}[] => {
+    const result: Record<string, ProjectIndexData[]> = {};
+    
+    arr.forEach(element => {
+      if (valueFilter && !valueFilter(element)) {
+        return;
+      }
+      
+      const tags = element.tags || [];
+      if (tags.length === 0) {
+        // 没有标签的项目归类到"未分类"
+        if (!result['未分类']) {
+          result['未分类'] = [];
+        }
+        result['未分类'].push(element);
+      } else {
+        // 有标签的项目，每个标签都创建一个分组
+        tags.forEach(tag => {
+          if (!result[tag]) {
+            result[tag] = [];
+          }
+          result[tag].push(element);
+        });
+      }
+    });
+
+    return Object.keys(result)
+      .sort()
+      .map(key => ({
+        key,
+        data: result[key]
+      }));
+  };
+
+  // 获取所有可用标签
+  const getAllTags = (): string[] => {
+    const allTags = new Set<string>();
+    index.forEach(md => {
+      if (md.tags) {
+        md.tags.forEach(tag => allTags.add(tag));
+      }
+    });
+    return Array.from(allTags).sort();
   };
 
   const setViewerConfig = async (vc: ViewerConfig) => {
@@ -140,16 +188,20 @@ export const Viewer = () => {
 
   function showPreviewList() {
     const list = (metaList: ProjectIndexData[]) => {
+      // 应用筛选
+      const filteredList = metaList.filter(filterMeta);
+      
       return <Stack
         ref={viewerRef} spacing={2} direction='row' justifyContent='center' flexWrap='wrap' useFlexGap>
         {
-          !metaList ? <h1>预览加载中</h1> :
-            metaList.map(md => <PreviewCard
+          !filteredList ? <h1>预览加载中</h1> :
+            filteredList.map(md => <PreviewCard
               key={md.createdAt}
               md={md}
               selectMd={selectMd}
               updateMeta={updateMeta}
               deleteMd={deleteMeta}
+              allTags={getAllTags()}
             />)
         }
       </Stack>;
@@ -169,14 +221,37 @@ export const Viewer = () => {
         return !!md.hide;
       }
       return false;
-    }
+    };
+
+    // 根据标签筛选
+    const filterMetaByTags = (md: ProjectIndexData): boolean => {
+      if (selectedTagsFilter.length === 0) {
+        return true;
+      }
+      if (!md.tags || md.tags.length === 0) {
+        return false;
+      }
+      // 检查是否包含任一选中的标签
+      return selectedTagsFilter.some(tag => md.tags!.includes(tag));
+    };
+
+    // 综合筛选函数
+    const filterMeta = (md: ProjectIndexData): boolean => {
+      return filterMetaByHide(md) && filterMetaByTags(md);
+    };
 
 
     return <MenuContainer style={{ height: '100vh', overflowY: 'auto' }} menu={menu}>
+      <TagFilter
+        availableTags={getAllTags()}
+        selectedTags={selectedTagsFilter}
+        onTagsChange={setSelectedTagsFilter}
+      />
       {viewerConfig.grouping === 'none'
         ? list(index)
-        : <>{
-          grouping(index, (md) => md.artist ?? '未填写作者', filterMetaByHide)
+        : viewerConfig.grouping === 'artist'
+        ? <>{
+          grouping(index, (md) => md.artist ?? '未填写作者', filterMeta)
             .map(d => {
               return <>
                 <Divider sx={{ margin: '10px 0' }} key={d.key}>
@@ -188,6 +263,21 @@ export const Viewer = () => {
               </>;
             })
         }</>
+        : viewerConfig.grouping === 'tags'
+        ? <>{
+          groupByTags(index, filterMeta)
+            .map(d => {
+              return <>
+                <Divider sx={{ margin: '10px 0' }} key={d.key}>
+                  <Chip variant='soft' color='primary' size='lg'>
+                    {d.key}
+                  </Chip>
+                </Divider>
+                {list(d.data)}
+              </>;
+            })
+        }</>
+        : null
       }
     </MenuContainer>;
   }
@@ -238,6 +328,11 @@ export const Viewer = () => {
           icon: viewerConfig?.grouping === 'artist' ? <CheckCircleOutlined /> : <Circle />,
           content: '按照作者分组',
           onClick: () => setViewerConfig({ ...viewerConfig, grouping: 'artist' })
+        },
+        {
+          icon: viewerConfig?.grouping === 'tags' ? <CheckCircleOutlined /> : <Circle />,
+          content: '按照标签分组',
+          onClick: () => setViewerConfig({ ...viewerConfig, grouping: 'tags' })
         }
       ]
     }

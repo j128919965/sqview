@@ -37,7 +37,7 @@ export interface MenuPosition {
 }
 
 export interface ViewerConfig {
-  grouping: 'none' | 'artist';
+  grouping: 'none' | 'artist' | 'tags';
   dirShow: DirShow,
   hideMode: 'all' | 'hide' | 'onlyHide'
 }

@@ -22,8 +22,30 @@ export class SqPicGetter {
         const suffix = SqPicUrlHelper.suffix(url);
         const toggleSuffix = SqPicUrlHelper.toggleSuffix(suffix);
         const newUrl = url.replace(new RegExp(suffix + '$'), toggleSuffix);
-        return this.doSendRequest(newUrl).then(({ data }) => {
-          return data;
+        return this.doSendRequest(newUrl).then((retryResp) => {
+          return retryResp.data;
+        });
+      }
+      // 添加最多2次的重试
+      if (code == 500) {
+        return this.doSendRequest(url).then((retryResp) => {
+          if (retryResp.code === 200) {
+            console.log(`[Fetch Retry] retry fetch ${url} success!, retry times: 1`)
+            return retryResp.data;
+          }
+
+          console.error(`[Fetch Retry] retry ${url} failed, retry again`)
+          return this.doSendRequest(url).then((retryResp) => {
+            if (retryResp.code === 200) {
+              console.log(`[Fetch Retry] retry fetch ${url} success!, retry times: 2`)
+              return retryResp.data;
+            } else {
+              console.error(`[Fetch Retry]fetch ${url} final failed, retry 2 times but still failed`)
+
+            }
+            return undefined;
+          });
+
         });
       }
     } catch (e) {
@@ -60,8 +82,7 @@ export class SqPicGetter {
         return { code: response.status, data: undefined };
       }
     } catch (e) {
-      console.error(e);
-
+      console.error(`[Fetch Failed] send ${url} and get data failed!`)
       if (e instanceof AxiosError) {
         return {code: e.response?.status ?? 500, data: undefined}
       }

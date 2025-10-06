@@ -2,20 +2,22 @@ import React, { useState } from 'react';
 import { Card, Typography } from '@mui/joy';
 import EditableText from '../../components/EditableText';
 import Image from '../../components/Image';
-import { Delete, Person, VisibilityOff } from '@mui/icons-material';
+import { Delete, Person, VisibilityOff, Label } from '@mui/icons-material';
 import { metaFirstPicPath } from '../../utils/metaUtils';
 import { MenuItemData, ProjectIndexData, ProjectMeta } from '../../data';
 import MenuContainer from '../../components/MenuContainer';
 import Toast from '../../components';
+import TagManager from '../../components/TagManager';
 
 export default (props: {
   md: ProjectIndexData,
   updateMeta: (md: ProjectIndexData, refreshList: boolean) => Promise<void>,
   selectMd: (md: ProjectIndexData) => void,
-  deleteMd: (md: ProjectIndexData) => void
+  deleteMd: (md: ProjectIndexData) => void,
+  allTags: string[]
 }) => {
 
-  const { updateMeta, selectMd, deleteMd } = props;
+  const { updateMeta, selectMd, deleteMd, allTags } = props;
   const [md, setMd] = useState<ProjectIndexData>(props.md);
 
   const updateMd = async (refreshList: boolean) => {
@@ -34,6 +36,18 @@ export default (props: {
                         md.artist = str;
                         await updateMd(true);
                       }} /></div>
+    },
+    {
+      icon: <Label />,
+      content: <TagManager
+        currentTags={md.tags || []}
+        availableTags={allTags}
+        onTagsChange={async (tags) => {
+          md.tags = tags;
+          await updateMd(true);
+        }}
+      />,
+      notCloseAfterClick: true
     },
     {
       icon: <VisibilityOff />,
