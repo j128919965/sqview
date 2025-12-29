@@ -1,5 +1,3 @@
-import React, { ReactElement } from 'react';
-
 export interface ProjectMeta {
   indexToFileName: (string | undefined)[],
   indexToSmallFileName: (string | undefined)[],
@@ -19,21 +17,6 @@ export interface ProjectIndexData {
   artist?: string,
   tags?: string[],
   hide?: boolean
-}
-
-
-export interface MenuItemData {
-  icon?: ReactElement,
-  onClick?: (e: React.MouseEvent) => void
-  content: string | ReactElement,
-  subMenus?: MenuItemData[]
-  ignore?: boolean,
-  notCloseAfterClick?: boolean
-}
-
-export interface MenuPosition {
-  x: number,
-  y: number
 }
 
 export interface ViewerConfig {

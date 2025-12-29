@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, Option, Select, Stack, ToggleButtonGroup } from '@mui/joy';
 import { ArrowDropDown, ViewCarousel, ViewList } from '@mui/icons-material';
 import { DirShow, isDirShow, ProjectMeta } from '../../data';
-import { isValidString } from '../../utils/stringUtils';
+import { isValidString } from '@sqview/core/dist/utils/stringUtils';
 
 const idToPath = (meta: ProjectMeta,id: string|undefined) => {
   if (isValidString(id)) {
