@@ -16,6 +16,7 @@ interface Optional<T> {
 }
 
 const cache = new LRUCache<string, Optional<string>>(options)
+const pending = new Map<string, Promise<string | undefined>>();
 
 const load = async (filePath: string, fileType: FileType = 'blob'): Promise<string | undefined> => {
   try {
@@ -38,14 +39,22 @@ const load = async (filePath: string, fileType: FileType = 'blob'): Promise<stri
 
 export const dataUrlCache = {
 
+  delete: (filePath: string, fileType: FileType = 'blob') => cache.delete(`${fileType}:${filePath}`),
+
   get: async (filePath: string, fileType: FileType = 'blob'): Promise<string | undefined> => {
-    const d = cache.get(filePath)
+    const key = `${fileType}:${filePath}`;
+    const d = cache.get(key)
     if (d) {
       return d.data
     }
-    const loadResult = await load(filePath, fileType)
-    cache.set(filePath, { data: loadResult })
-    return loadResult
+    const existing = pending.get(key);
+    if (existing) return existing;
+    const request = load(filePath, fileType).then(data => {
+      if (data) cache.set(key, { data });
+      return data;
+    }).finally(() => pending.delete(key));
+    pending.set(key, request);
+    return request;
   }
 
 }

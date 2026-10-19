@@ -28,6 +28,7 @@ export const Viewer = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [index, setIndex] = useState<ProjectIndexData[]>([]);
   const [selectedTagsFilter, setSelectedTagsFilter] = useState<string[]>([]);
+  const [readingOrder, setReadingOrder] = useState<number[]>([]);
 
   const findMeta = (mdId: number) : ProjectMeta | undefined => {
     for (let meta of metas) {
@@ -41,7 +42,10 @@ export const Viewer = () => {
   const selectMd = (idxData: ProjectIndexData) => {
     const meta = findMeta(idxData.createdAt);
     if (meta) {
+      setReadingOrder(displayedAlbums().map(album => album.createdAt));
       setSelectedMd(meta)
+    } else {
+      Toast.error('图集信息加载中，请稍后重试');
     }
   }
 
@@ -186,6 +190,25 @@ export const Viewer = () => {
     }
   }, []);
 
+  const filterMeta = (md: ProjectIndexData): boolean => {
+    const matchesHide = viewerConfig.hideMode === 'all'
+      || (viewerConfig.hideMode === 'hide' ? !md.hide : !!md.hide);
+    const matchesTags = selectedTagsFilter.length === 0
+      || selectedTagsFilter.some(tag => md.tags?.includes(tag));
+    return matchesHide && matchesTags;
+  };
+
+  function displayedAlbums(): ProjectIndexData[] {
+    const visible = index.filter(filterMeta);
+    let ordered = visible;
+    if (viewerConfig.grouping === 'artist') {
+      ordered = grouping(visible, md => md.artist ?? '未填写作者').flatMap(group => group.data);
+    } else if (viewerConfig.grouping === 'tags') {
+      ordered = groupByTags(visible).flatMap(group => group.data);
+    }
+    return ordered.filter((album, position) => ordered.findIndex(item => item.createdAt === album.createdAt) === position);
+  }
+
   function showPreviewList() {
     const list = (metaList: ProjectIndexData[]) => {
       // 应用筛选
@@ -207,41 +230,8 @@ export const Viewer = () => {
       </Stack>;
     };
 
-    const filterMetaByHide = (md: ProjectIndexData): boolean => {
-      if (!viewerConfig) {
-        return true;
-      }
-      if (viewerConfig.hideMode === 'all') {
-        return true;
-      }
-      if (viewerConfig.hideMode === 'hide') {
-        return !md.hide;
-      }
-      if (viewerConfig.hideMode === 'onlyHide') {
-        return !!md.hide;
-      }
-      return false;
-    };
-
-    // 根据标签筛选
-    const filterMetaByTags = (md: ProjectIndexData): boolean => {
-      if (selectedTagsFilter.length === 0) {
-        return true;
-      }
-      if (!md.tags || md.tags.length === 0) {
-        return false;
-      }
-      // 检查是否包含任一选中的标签
-      return selectedTagsFilter.some(tag => md.tags!.includes(tag));
-    };
-
-    // 综合筛选函数
-    const filterMeta = (md: ProjectIndexData): boolean => {
-      return filterMetaByHide(md) && filterMetaByTags(md);
-    };
-
-
     return <MenuContainer style={{ height: '100vh', overflowY: 'auto' }} menu={menu}>
+      <>
       <TagFilter
         availableTags={getAllTags()}
         selectedTags={selectedTagsFilter}
@@ -253,37 +243,47 @@ export const Viewer = () => {
         ? <>{
           grouping(index, (md) => md.artist ?? '未填写作者', filterMeta)
             .map(d => {
-              return <>
+              return <React.Fragment key={d.key}>
                 <Divider sx={{ margin: '10px 0' }} key={d.key}>
                   <Chip variant='soft' color='neutral' size='lg'>
                     {d.key}
                   </Chip>
                 </Divider>
                 {list(d.data)}
-              </>;
+              </React.Fragment>;
             })
         }</>
         : viewerConfig.grouping === 'tags'
         ? <>{
           groupByTags(index, filterMeta)
             .map(d => {
-              return <>
+              return <React.Fragment key={d.key}>
                 <Divider sx={{ margin: '10px 0' }} key={d.key}>
                   <Chip variant='soft' color='primary' size='lg'>
                     {d.key}
                   </Chip>
                 </Divider>
                 {list(d.data)}
-              </>;
+              </React.Fragment>;
             })
         }</>
         : null
       }
+      </>
     </MenuContainer>;
   }
 
   function showDetail() {
+    const position = readingOrder.indexOf(selectedMd!.createdAt);
+    const nextAlbum = position < 0 ? undefined : readingOrder.slice(position + 1)
+      .map(findMeta).find((meta): meta is ProjectMeta => !!meta);
     return <DetailView
+      nextAlbumName={nextAlbum?.name}
+      onNextAlbum={nextAlbum ? () => {
+        setSelectedMd(nextAlbum);
+        nextAlbum.lastOpen = Date.now();
+        updateMeta(nextAlbum, true).catch(() => Toast.error('未能保存最近阅读时间'));
+      } : undefined}
       onChangeDirShow={(dirShow: DirShow) => setViewerConfig({ ...viewerConfig, dirShow })}
       defaultDirShow={viewerConfig.dirShow}
       onCloseDetail={() => {
