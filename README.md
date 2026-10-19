@@ -54,8 +54,14 @@ git clone https://github.com/j128919965/sqview.git
 
 2. 安装依赖
 ```bash
-npm install
+nvm install
+nvm use
+npm ci
 ```
+
+项目通过 `.nvmrc` 固定使用 Node.js 16.20.2。`.npmrc` 已配置 npmmirror，npm 包、Electron 可执行文件及 electron-builder 工具均使用国内镜像。安装脚本会直接显示输出，首次安装会下载 Electron 并构建开发用 DLL。
+
+如果安装被中断，重新执行 `npm ci`。也可以执行 `npm run build:dll` 单独重建 DLL；启动时检测到 DLL 缺失也会自动重建，无需重新安装依赖。
 
 3. 启动开发服务器
 ```bash

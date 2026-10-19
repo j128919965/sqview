@@ -240,9 +240,9 @@
       "repo": "electron-react-boilerplate"
     }
   },
-  "devEngines": {
-    "node": ">=14.x",
-    "npm": ">=7.x"
+  "engines": {
+    "node": ">=16.20.2",
+    "npm": ">=8"
   },
   "electronmon": {
     "patterns": [
